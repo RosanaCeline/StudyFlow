@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +55,11 @@ public class SubjectService {
         subjectRepository.delete(subject);
 
         return ResponseEntity.noContent().build();
+    }
+
+    public List<Subject> listAll () {
+        List<Subject> subjects = subjectRepository.findAll();
+
+        return subjects;
     }
 }
