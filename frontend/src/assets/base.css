@@ -1,0 +1,20 @@
+:root {
+  --color-background: #fafbfd;
+
+  --color-body: #d94052;
+  --color-body-dark: #801245;
+
+  --color-text-light: #474c4e;
+
+  --color-background-soft: var(--vt-c-white-soft);
+  --color-background-mute: var(--vt-c-white-mute);
+
+  --color-border: var(--vt-c-divider-light-2);
+  --color-border-hover: var(--vt-c-divider-light-1);
+
+  --color-heading: var(--vt-c-text-light-1);
+  --color-text: var(--vt-c-text-light-1);
+
+  --section-gap: 160px;
+}
+
