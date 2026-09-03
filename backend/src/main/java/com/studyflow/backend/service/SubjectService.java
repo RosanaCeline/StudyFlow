@@ -32,4 +32,18 @@ public class SubjectService {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(subject);
     }
+
+    public ResponseEntity<Subject> update(Long id, SubjectDTO dto) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+
+        subject.setName(dto.name());
+        subject.setDescription(dto.description());
+        subject.setColor(dto.color());
+        subject.setSituation(dto.situation());
+
+        subjectRepository.save(subject);
+
+        return ResponseEntity.ok(subject);
+    }
 }
