@@ -46,4 +46,13 @@ public class SubjectService {
 
         return ResponseEntity.ok(subject);
     }
+
+    public ResponseEntity<Void> delete(Long id) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+
+        subjectRepository.delete(subject);
+
+        return ResponseEntity.noContent().build();
+    }
 }
