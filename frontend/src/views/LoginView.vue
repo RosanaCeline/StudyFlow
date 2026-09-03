@@ -1,7 +1,5 @@
 <script setup>
     import { ref } from 'vue'
-    import bgLeft from '@/assets/images/background-left.svg'
-    import bgRight from '@/assets/images/background-right.svg'
 
     const email = ref('')
     const password = ref('')
@@ -39,73 +37,73 @@
 
 <template>
     <div class="login-page">
-        <img :src="bgLeft" class="bg-img img-left" alt="Ilustração Esquerda">
-        <img :src="bgRight" class="bg-img img-right" alt="Ilustração Direita">
-
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-5">
-                    <div class="card shadow">
-                        <div class="card-body p-5">
-                            <h1 class="text-center">StudyFlow</h1>
+                    <div class="card-wrapper">
+                        <div class="glow-orb"></div>
+                        <div class="card shadow">
+                            <div class="card-body p-5">
+                                <h1 class="text-center">StudyFlow</h1>
 
-                            <p class="text-center mb-4">Faça login para continuar</p>
+                                <p class="text-center mb-4">Faça login para continuar</p>
 
-                            <form @submit.prevent="handleSubmit" novalidate>
-                                <div class="mb-4">
-                                    <label class="form-label">
-                                        E-mail <span class="text-danger">*</span>
-                                    </label>
-                                    <input 
-                                        type="email" 
-                                        class="form-control" 
-                                        :class="{ 'is-invalid': errors.email }"
-                                        v-model="email" 
-                                        placeholder="Digite seu e-mail" 
-                                        required
-                                    >
-                                    <div class="invalid-feedback" v-if="errors.email">
-                                        {{ errors.email }}
-                                    </div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label">
-                                        Senha <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group">
+                                <form @submit.prevent="handleSubmit" novalidate>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            E-mail <span class="text-danger">*</span>
+                                        </label>
                                         <input 
-                                            :type="showPassword ? 'text' : 'password'"
+                                            type="email" 
                                             class="form-control" 
-                                            :class="{ 'is-invalid': errors.password }"
-                                            v-model="password" 
-                                            placeholder="Digite sua senha" 
+                                            :class="{ 'is-invalid': errors.email }"
+                                            v-model="email" 
+                                            placeholder="Digite seu e-mail" 
                                             required
                                         >
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-outline-secondary" 
-                                            @click="showPassword = !showPassword"
-                                            tabindex="-1"
-                                        >
-                                            <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
-                                        </button>
-                                        <div class="invalid-feedback" v-if="errors.password">
-                                            {{ errors.password }}
+                                        <div class="invalid-feedback" v-if="errors.email">
+                                            {{ errors.email }}
                                         </div>
                                     </div>
-                                </div>
 
-                                <button type="submit" class="btn btn-primary w-100">
-                                    Entrar
-                                </button>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            Senha <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <input 
+                                                :type="showPassword ? 'text' : 'password'"
+                                                class="form-control" 
+                                                :class="{ 'is-invalid': errors.password }"
+                                                v-model="password" 
+                                                placeholder="Digite sua senha" 
+                                                required
+                                            >
+                                            <button 
+                                                type="button" 
+                                                class="btn btn-outline-secondary" 
+                                                @click="showPassword = !showPassword"
+                                                tabindex="-1"
+                                            >
+                                                <i :class="showPassword ? 'bi bi-eye-slash' : 'bi bi-eye'"></i>
+                                            </button>
+                                            <div class="invalid-feedback" v-if="errors.password">
+                                                {{ errors.password }}
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                <p class="text-center p-3">
-                                    <a href="">Criar uma conta</a>
-                                </p>
-                            </form>
-                        </div>
-                    </div> 
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        Entrar
+                                    </button>
+
+                                    <p class="text-center p-3">
+                                        <a href="">Criar uma conta</a>
+                                    </p>
+                                </form>
+                            </div>
+                        </div> 
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,6 +115,25 @@
         min-height: 100vh;
         display: flex;
         align-items: center;
+    }
+
+    .card-wrapper {
+        position: relative;
+    }
+
+    .glow-orb {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80vw;
+        height: 90vh;
+        border-radius: 50%;
+        /* Gradiente radial combinando tons de roxo, rosa ou azul */
+        background: radial-gradient(circle, rgba(128, 18, 69, 0.4) 0%, rgba(217, 64, 82, 0.3) 50%, rgba(255, 255, 255, 0) 70%);
+        filter: blur(60px); /* Aplica o desfoque suave */
+        z-index: 0;
+        pointer-events: none;
     }
 
     .bg-img {
@@ -154,6 +171,7 @@
     .btn {
         border: 1px solid transparent;
         background-color: var(--color-body);
+        color: white;
     }
 
     .btn:hover {
