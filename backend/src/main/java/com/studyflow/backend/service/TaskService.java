@@ -68,4 +68,32 @@ public class TaskService {
 
         return ResponseEntity.ok(updatedTask);
     }
+
+    public ResponseEntity<Void> delete(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+
+        taskRepository.delete(task);
+
+        return ResponseEntity.noContent().build();
+    }
+
+    public ResponseEntity<Task> toggleCompleted(Long id) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+
+        if(task.getStatus() == Status.COMPLETED) {
+            task.setStatus(Status.PENDING);
+            task.setCompletionDate(null);
+        } else {
+            task.setStatus(Status.COMPLETED);
+            task.setCompletionDate(
+                    LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+            );
+        }
+
+        taskRepository.save(task);
+
+        return ResponseEntity.ok(task);
+    }
 }
