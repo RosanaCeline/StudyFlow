@@ -1,18 +1,22 @@
 package com.studyflow.backend.service;
 
 import com.studyflow.backend.data.dto.TaskDTO;
+import com.studyflow.backend.model.Priority;
 import com.studyflow.backend.model.Status;
 import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.model.Task;
 import com.studyflow.backend.repository.SubjectRepository;
 import com.studyflow.backend.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -95,5 +99,32 @@ public class TaskService {
         taskRepository.save(task);
 
         return ResponseEntity.ok(task);
+    }
+
+    public List<Task> filter(Long subjectId, Status status, Priority priority) {
+
+        List<Specification<Task>> specifications = new ArrayList<>();
+
+        if (subjectId != null) {
+            specifications.add((root, query, cb) ->
+                    cb.equal(root.get("subject").get("id"), subjectId)
+            );
+        }
+
+        if (status != null) {
+            specifications.add((root, query, cb) ->
+                    cb.equal(root.get("status"), status)
+            );
+        }
+
+        if (priority != null) {
+            specifications.add((root, query, cb) ->
+                    cb.equal(root.get("priority"), priority)
+            );
+        }
+
+        Specification<Task> specification = Specification.allOf(specifications);
+
+        return taskRepository.findAll(specification);
     }
 }
