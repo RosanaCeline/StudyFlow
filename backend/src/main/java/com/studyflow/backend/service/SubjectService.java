@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 @Service
 @RequiredArgsConstructor
 public class SubjectService {
@@ -20,7 +23,9 @@ public class SubjectService {
         subject.setName(dto.name());
         subject.setDescription(dto.description());
         subject.setColor(dto.color());
-        subject.setCreationDate(dto.creationDate());
+        subject.setCreationDate(
+                LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+        );
         subject.setSituation(dto.situation());
 
         subjectRepository.save(subject);

@@ -51,20 +51,6 @@ public record TaskDTO(
         )
         Status status,
 
-        @NotNull(message = "A data de criação é obrigatória")
-        @Schema(
-                description = "Data e hora de criação da tarefa",
-                example = "2026-09-03T10:30:00"
-        )
-        LocalDateTime creationDate,
-
-        @NotNull(message = "A data de conclusão é obrigatória")
-        @Schema(
-                description = "Data e hora em que a tarefa foi concluída",
-                example = "2026-09-03T10:30:00"
-        )
-        LocalDateTime completionDate,
-
         @NotNull(message = "O ID da disciplina é obrigatório")
         @Schema(
                 description = "ID da disciplina que a tarefa está vinculada",

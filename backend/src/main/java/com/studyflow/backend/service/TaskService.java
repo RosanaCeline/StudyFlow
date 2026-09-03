@@ -1,6 +1,7 @@
 package com.studyflow.backend.service;
 
 import com.studyflow.backend.data.dto.TaskDTO;
+import com.studyflow.backend.model.Status;
 import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.model.Task;
 import com.studyflow.backend.repository.SubjectRepository;
@@ -9,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +32,40 @@ public class TaskService {
         task.setDeadline(dto.deadline());
         task.setPriority(dto.priority());
         task.setStatus(dto.status());
-        task.setCreationDate(dto.creationDate());
+        task.setCreationDate(
+                LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+        );
         task.setSubject(subject);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
 
+    public ResponseEntity<Task> update(Long id, TaskDTO dto) {
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+
+        Subject subject = subjectRepository.findById(dto.subjectId())
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+
+        task.setTitle(dto.title());
+        task.setDescription(dto.description());
+        task.setDeadline(dto.deadline());
+        task.setPriority(dto.priority());
+        task.setStatus(dto.status());
+        task.setSubject(subject);
+
+        if (dto.status() == Status.COMPLETED) {
+            if (task.getCompletionDate() == null) {
+                task.setCompletionDate(
+                        LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                );
+            }
+        } else {
+            task.setCompletionDate(null);
+        }
+
+        Task updatedTask = taskRepository.save(task);
+
+        return ResponseEntity.ok(updatedTask);
+    }
 }

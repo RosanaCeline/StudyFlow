@@ -40,13 +40,6 @@ public record SubjectDTO(
         )
         String color,
 
-        @NotNull(message = "A data de criação é obrigatória")
-        @Schema(
-                description = "Data e hora de criação da disciplina",
-                example = "2026-09-03T10:30:00"
-        )
-        LocalDateTime creationDate,
-
         @NotNull(message = "A situação é obrigatória")
         @Schema(
                 description = "Situação atual da disciplina",
