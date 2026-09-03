@@ -63,5 +63,12 @@ public record TaskDTO(
                 description = "Data e hora em que a tarefa foi concluída",
                 example = "2026-09-03T10:30:00"
         )
-        LocalDateTime completionDate
+        LocalDateTime completionDate,
+
+        @NotNull(message = "O ID da disciplina é obrigatório")
+        @Schema(
+                description = "ID da disciplina que a tarefa está vinculada",
+                example = "1"
+        )
+        Long subjectId
 ) {}

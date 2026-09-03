@@ -42,4 +42,8 @@ public class Task {
 
     @Column(name = "completion_date", nullable = false)
     private LocalDateTime completionDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
 }
