@@ -30,7 +30,7 @@
         }
 
         if (isValid) {
-            //contece nada por enquanto
+            router.push('/app/dashboard')
         }
     }
 </script>
@@ -39,12 +39,12 @@
     <div class="login-page">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-md-5">
+                <div class="col-12 col-sm-10 col-md-8 col-lg-5">
                     <div class="card-wrapper">
                         <div class="glow-orb"></div>
                         <div class="card shadow">
-                            <div class="card-body p-5">
-                                <h1 class="text-center">StudyFlow</h1>
+                            <div class="card-body p-4 p-md-5">
+                                <h1 class="text-center brand-title text-nowrap">StudyFlow</h1>
 
                                 <p class="text-center mb-4">Faça login para continuar</p>
 
