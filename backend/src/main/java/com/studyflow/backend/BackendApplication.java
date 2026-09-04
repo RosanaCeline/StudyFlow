@@ -1,13 +1,15 @@
 package com.studyflow.backend;
 
-import org.springframework.boot.SpringApplication;
+import com.studyflow.backend.config.DotenvInitializer;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
 @SpringBootApplication
 public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BackendApplication.class, args);
+		new SpringApplicationBuilder(BackendApplication.class)
+				.initializers(new DotenvInitializer())
+				.run(args);
 	}
-
 }

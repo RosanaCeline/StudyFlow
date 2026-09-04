@@ -1,1 +1,46 @@
-spring.application.name=backend
+server:
+  port: 8080
+email:
+  subject: "Default Subject"
+  message: "Default Message"
+security:
+  jwt:
+    token:
+      secret-key: token_secreto
+      expire-length: 3600000
+spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  mvc:
+    locale: pt_BR
+    charset: UTF-8
+  jackson:
+    time-zone: America/Sao_Paulo
+  messages:
+    encoding: UTF-8
+  application:
+    name: StudyFlow API
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${STUDYFLOW_DATABASE_URL}
+    username: ${STUDYFLOW_DATABASE_USERNAME}
+    password: ${STUDYFLOW_DATABASE_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.time_zone: America/Sao_Paulo
+    show-sql: false
+    open-in-view: false
+  flyway:
+    baseline-on-migrate: true
+logging:
+  level:
+    root: WARN
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
