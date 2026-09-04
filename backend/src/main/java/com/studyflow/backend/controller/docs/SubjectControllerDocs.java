@@ -51,4 +51,11 @@ public interface SubjectControllerDocs {
     })
     @GetMapping
     ResponseEntity<List<SubjectDTO>> listAll();
+
+    @Operation(summary = "Retorna uma disciplina", description = "Retorna uma disciplina cadastrada.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Disciplina retornada com sucesso")
+    })
+    @GetMapping
+    public ResponseEntity<SubjectDTO> findById(Long id);
 }
