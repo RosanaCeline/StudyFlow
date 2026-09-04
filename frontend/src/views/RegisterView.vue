@@ -2,11 +2,13 @@
     import { ref } from 'vue'
     import { useRouter } from 'vue-router'
 
+    const name = ref('')
     const email = ref('')
     const password = ref('')
     const showPassword = ref(false)
 
     const errors = ref({
+        name: '',
         email: '',
         password: ''
     })
@@ -14,10 +16,16 @@
     const router = useRouter()
 
     function handleSubmit() {
+        errors.value.name = ''
         errors.value.email = ''
         errors.value.password = ''
 
         let isValid = true
+
+        if(!name.value) {
+            errors.value.name = 'O nome é obrigatório.'
+            isValid = false
+        }
 
         if (!email.value) {
             errors.value.email = 'O e-mail é obrigatório.'
@@ -49,9 +57,26 @@
                             <div class="card-body p-4 p-md-5">
                                 <h1 class="text-center brand-title text-nowrap">StudyFlow</h1>
 
-                                <p class="text-center mb-4">Faça login para continuar</p>
+                                <p class="text-center mb-4">Faça seu cadastro para acessar a plataforma</p>
 
                                 <form @submit.prevent="handleSubmit" novalidate>
+                                    <div class="mb-3">
+                                        <label class="form-label">
+                                            Nome <span class="text-danger">*</span>
+                                        </label>
+                                        <input 
+                                            type="text" 
+                                            class="form-control" 
+                                            :class="{ 'is-invalid': errors.name }"
+                                            v-model="name" 
+                                            placeholder="Insira um e-mail" 
+                                            required
+                                        >
+                                        <div class="invalid-feedback" v-if="errors.name">
+                                            {{ errors.name }}
+                                        </div>
+                                    </div>
+
                                     <div class="mb-3">
                                         <label class="form-label">
                                             E-mail <span class="text-danger">*</span>
@@ -61,7 +86,7 @@
                                             class="form-control" 
                                             :class="{ 'is-invalid': errors.email }"
                                             v-model="email" 
-                                            placeholder="Digite seu e-mail" 
+                                            placeholder="Insira um e-mail" 
                                             required
                                         >
                                         <div class="invalid-feedback" v-if="errors.email">
@@ -79,7 +104,7 @@
                                                 class="form-control" 
                                                 :class="{ 'is-invalid': errors.password }"
                                                 v-model="password" 
-                                                placeholder="Digite sua senha" 
+                                                placeholder="Insira uma senha" 
                                                 required
                                             >
                                             <button 
@@ -97,11 +122,11 @@
                                     </div>
 
                                     <button type="submit" class="btn btn-primary w-100">
-                                        Entrar
+                                        Cadastrar
                                     </button>
 
                                     <p class="text-center p-3">
-                                        <RouterLink to="/register">Criar uma conta</RouterLink>
+                                        <RouterLink to="/login">Já tem uma conta?</RouterLink>
                                     </p>
                                 </form>
                             </div>
@@ -132,7 +157,7 @@
         width: 80vw;
         height: 90vh;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(128, 18, 69, 0.4) 0%, rgba(217, 64, 82, 0.3) 50%, rgba(255, 255, 255, 0) 70%);
+        background: radial-gradient(circle, rgba(24, 76, 120, 0.45) 0%, rgba(42, 157, 143, 0.3) 50%, rgba(255, 255, 255, 0) 70%);
         filter: blur(60px);
         z-index: 0;
         pointer-events: none;
@@ -166,13 +191,13 @@
     }
 
     .form-control:focus {
-        border-color: var(--color-body-dark);
-        box-shadow: 0 0 0 .25rem rgba(217, 64, 82, .25);
+        border-color: var(--color-body-blue);
+        box-shadow: 0 0 0 .25rem rgba(42, 157, 144, .25);
     }
 
     .btn {
         border: 1px solid transparent;
-        background-color: var(--color-body);
+        background-color: var(--color-body-blue);
         color: white;
     }
 
