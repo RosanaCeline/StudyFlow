@@ -1,8 +1,12 @@
 package com.studyflow.backend.service;
 
 import com.studyflow.backend.data.dto.SubjectDTO;
+import com.studyflow.backend.data.dto.TaskDTO;
 import com.studyflow.backend.model.Subject;
+import com.studyflow.backend.model.Task;
 import com.studyflow.backend.repository.SubjectRepository;
+import com.studyflow.backend.service.mapper.TaskMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,11 +16,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class SubjectService {
 
-    private SubjectRepository subjectRepository;
+    private final SubjectRepository subjectRepository;
+    private final TaskMapper taskMapper;
 
-    public Subject create(SubjectDTO dto) {
+    public SubjectDTO create(SubjectDTO dto) {
         Subject subject = new Subject();
 
         subject.setName(dto.name());
@@ -27,12 +33,12 @@ public class SubjectService {
         );
         subject.setSituation(dto.situation());
 
-        subjectRepository.save(subject);
+        Subject savedSubject = subjectRepository.save(subject);
 
-        return subject;
+        return toSubjectDTO(savedSubject);
     }
 
-    public Subject update(Long id, SubjectDTO dto) {
+    public SubjectDTO update(Long id, SubjectDTO dto) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
@@ -41,9 +47,9 @@ public class SubjectService {
         subject.setColor(dto.color());
         subject.setSituation(dto.situation());
 
-        subjectRepository.save(subject);
+        Subject savedSubject = subjectRepository.save(subject);
 
-        return subject;
+        return toSubjectDTO(savedSubject);
     }
 
     public void delete(Long id) {
@@ -55,9 +61,23 @@ public class SubjectService {
         return;
     }
 
-    public List<Subject> listAll () {
+    public List<SubjectDTO> listAll () {
         List<Subject> subjects = subjectRepository.findAll();
 
-        return subjects;
+        return subjects.stream()
+                .map(this::toSubjectDTO)
+                .toList();
+    }
+
+    private SubjectDTO toSubjectDTO(Subject subject) {
+        return new SubjectDTO(
+                subject.getId(),
+                subject.getName(),
+                subject.getDescription(),
+                subject.getColor(),
+                subject.getSituation(),
+                subject.getTask().stream().map(taskMapper::toDTO).toList(),
+                subject.getCreationDate()
+        );
     }
 }

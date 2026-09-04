@@ -3,7 +3,6 @@ package com.studyflow.backend.controller.docs;
 import com.studyflow.backend.data.dto.TaskDTO;
 import com.studyflow.backend.model.Priority;
 import com.studyflow.backend.model.Status;
-import com.studyflow.backend.model.Task;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +24,7 @@ public interface TaskControllerDocs {
             @ApiResponse(responseCode = "404", description = "Disciplina não encontrada")
     })
     @PostMapping
-    ResponseEntity<Task> create(@RequestBody @Valid TaskDTO dto);
+    ResponseEntity<TaskDTO> create(@RequestBody @Valid TaskDTO dto);
 
     @Operation(summary = "Atualiza uma tarefa", description = "Atualiza todos os dados de uma tarefa existente pelo seu ID.")
     @ApiResponses(value = {
@@ -34,7 +33,7 @@ public interface TaskControllerDocs {
             @ApiResponse(responseCode = "404", description = "Tarefa ou disciplina não encontrada")
     })
     @PutMapping("/{id}")
-    ResponseEntity<Task> update(
+    ResponseEntity<TaskDTO> update(
             @Parameter(description = "ID da tarefa", required = true) @PathVariable Long id,
             @RequestBody @Valid TaskDTO dto
     );
@@ -55,7 +54,7 @@ public interface TaskControllerDocs {
             @ApiResponse(responseCode = "404", description = "Tarefa não encontrada")
     })
     @PatchMapping("/{id}/toggle")
-    ResponseEntity<Task> toggleCompleted(
+    ResponseEntity<TaskDTO> toggleCompleted(
             @Parameter(description = "ID da tarefa", required = true) @PathVariable Long id
     );
 
@@ -64,7 +63,7 @@ public interface TaskControllerDocs {
             @ApiResponse(responseCode = "200", description = "Lista de tarefas retornada com sucesso")
     })
     @GetMapping
-    ResponseEntity<List<Task>> filter(
+    ResponseEntity<List<TaskDTO>> filter(
             @Parameter(description = "ID da disciplina para filtro") @RequestParam(required = false) Long subjectId,
             @Parameter(description = "Status da tarefa (PENDING, COMPLETED, etc.)") @RequestParam(required = false) Status status,
             @Parameter(description = "Prioridade da tarefa (LOW, MEDIUM, HIGH, etc.)") @RequestParam(required = false) Priority priority

@@ -1,7 +1,6 @@
 package com.studyflow.backend.controller.docs;
 
 import com.studyflow.backend.data.dto.SubjectDTO;
-import com.studyflow.backend.model.Subject;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -22,7 +21,7 @@ public interface SubjectControllerDocs {
             @ApiResponse(responseCode = "400", description = "Dados de entrada inválidos")
     })
     @PostMapping
-    ResponseEntity<Subject> create(@RequestBody @Valid SubjectDTO dto);
+    ResponseEntity<SubjectDTO> create(@RequestBody @Valid SubjectDTO dto);
 
     @Operation(summary = "Atualiza uma disciplina", description = "Atualiza todos os dados de uma disciplina existente pelo seu ID.")
     @ApiResponses(value = {
@@ -31,7 +30,7 @@ public interface SubjectControllerDocs {
             @ApiResponse(responseCode = "404", description = "Disciplina não encontrada")
     })
     @PutMapping("/{id}")
-    ResponseEntity<Subject> update(
+    ResponseEntity<SubjectDTO> update(
             @Parameter(description = "ID da disciplina", required = true) @PathVariable Long id,
             @RequestBody @Valid SubjectDTO dto
     );
@@ -51,5 +50,5 @@ public interface SubjectControllerDocs {
             @ApiResponse(responseCode = "200", description = "Lista de disciplinas retornada com sucesso")
     })
     @GetMapping
-    ResponseEntity<List<Subject>> listAll();
+    ResponseEntity<List<SubjectDTO>> listAll();
 }

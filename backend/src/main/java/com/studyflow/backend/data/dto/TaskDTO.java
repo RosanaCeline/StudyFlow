@@ -14,6 +14,12 @@ import java.time.LocalDateTime;
         description = "DTO utilizado para representar os dados de uma tarefa no StudyFlow."
 )
 public record TaskDTO(
+        @Schema(
+                description = "ID da tarefa",
+                example = "1"
+        )
+        Long id,
+
         @NotBlank(message = "O título da tarefa é obrigatório")
         @Size(max = 60, message = "O título deve possuir no máximo 60 caracteres")
         @Schema(

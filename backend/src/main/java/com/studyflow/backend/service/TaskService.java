@@ -7,6 +7,8 @@ import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.model.Task;
 import com.studyflow.backend.repository.SubjectRepository;
 import com.studyflow.backend.repository.TaskRepository;
+import com.studyflow.backend.service.mapper.TaskMapper;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -18,12 +20,14 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class TaskService {
 
-    private SubjectRepository subjectRepository;
-    private TaskRepository taskRepository;
+    private final SubjectRepository subjectRepository;
+    private final TaskRepository taskRepository;
+    private final TaskMapper taskMapper;
 
-    public Task create(TaskDTO dto) {
+    public TaskDTO create(TaskDTO dto) {
         Subject subject = subjectRepository.findById(dto.subjectId())
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
@@ -39,10 +43,12 @@ public class TaskService {
         );
         task.setSubject(subject);
 
-        return task;
+        Task savedTask = taskRepository.save(task);
+
+        return taskMapper.toDTO(savedTask);
     }
 
-    public Task update(Long id, TaskDTO dto) {
+    public TaskDTO update(Long id, TaskDTO dto) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
@@ -66,7 +72,9 @@ public class TaskService {
             task.setCompletionDate(null);
         }
 
-        return taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
+
+        return taskMapper.toDTO(savedTask);
     }
 
     public void delete(Long id) {
@@ -78,7 +86,7 @@ public class TaskService {
         return;
     }
 
-    public Task toggleCompleted(Long id) {
+    public TaskDTO toggleCompleted(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
@@ -92,12 +100,12 @@ public class TaskService {
             );
         }
 
-        taskRepository.save(task);
+        Task savedTask = taskRepository.save(task);
 
-        return task;
+        return taskMapper.toDTO(savedTask);
     }
 
-    public List<Task> filter(Long subjectId, Status status, Priority priority) {
+    public List<TaskDTO> filter(Long subjectId, Status status, Priority priority) {
 
         List<Specification<Task>> specifications = new ArrayList<>();
 
@@ -121,6 +129,10 @@ public class TaskService {
 
         Specification<Task> specification = Specification.allOf(specifications);
 
-        return taskRepository.findAll(specification);
+        List<Task> tasks = taskRepository.findAll(specification);
+
+        return tasks.stream()
+                .map(taskMapper::toDTO)
+                .toList();
     }
 }

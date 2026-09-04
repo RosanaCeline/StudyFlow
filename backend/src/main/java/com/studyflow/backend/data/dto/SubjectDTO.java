@@ -2,12 +2,12 @@ package com.studyflow.backend.data.dto;
 
 
 import com.studyflow.backend.model.Situation;
-import com.studyflow.backend.model.Task;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Schema(
@@ -15,6 +15,12 @@ import java.util.List;
         description = "DTO utilizado para representar os dados de uma disciplina no StudyFlow."
 )
 public record SubjectDTO(
+        @Schema(
+                description = "ID da disciplina",
+                example = "1"
+        )
+        Long id,
+
         @NotBlank(message = "O nome da disciplina é obrigatório")
         @Size(max = 100, message = "O nome deve possuir no máximo 100 caracteres")
         @Schema(
@@ -49,5 +55,10 @@ public record SubjectDTO(
         @Schema(
                 description = "Lista de tarefas vinculadas à disciplina"
         )
-        List<Task> task
+        List<TaskDTO> task,
+
+        @Schema(
+                description = "Data de criação da disciplina"
+        )
+        LocalDateTime creationDate
 ) {}

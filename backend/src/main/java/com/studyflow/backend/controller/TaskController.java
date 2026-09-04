@@ -22,15 +22,15 @@ public class TaskController implements TaskControllerDocs {
     private final TaskService taskService;
 
     @PostMapping
-    public ResponseEntity<Task> create(@RequestBody @Valid TaskDTO dto) {
-        Task task = taskService.create(dto);
+    public ResponseEntity<TaskDTO> create(@RequestBody @Valid TaskDTO dto) {
+        TaskDTO task = taskService.create(dto);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(task);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> update(@PathVariable Long id, @RequestBody @Valid TaskDTO dto) {
-        Task updatedTask = taskService.update(id, dto);
+    public ResponseEntity<TaskDTO> update(@PathVariable Long id, @RequestBody @Valid TaskDTO dto) {
+        TaskDTO updatedTask = taskService.update(id, dto);
         return ResponseEntity.ok(updatedTask);
     }
 
@@ -41,18 +41,18 @@ public class TaskController implements TaskControllerDocs {
     }
 
     @PatchMapping("/{id}/toggle")
-    public ResponseEntity<Task> toggleCompleted(@PathVariable Long id) {
-        Task task = taskService.toggleCompleted(id);
+    public ResponseEntity<TaskDTO> toggleCompleted(@PathVariable Long id) {
+        TaskDTO task = taskService.toggleCompleted(id);
         return ResponseEntity.ok(task);
     }
 
     @GetMapping
-    public ResponseEntity<List<Task>> filter(
+    public ResponseEntity<List<TaskDTO>> filter(
             @RequestParam(required = false) Long subjectId,
             @RequestParam(required = false) Status status,
             @RequestParam(required = false) Priority priority) {
 
-        List<Task> tasks = taskService.filter(subjectId, status, priority);
+        List<TaskDTO> tasks = taskService.filter(subjectId, status, priority);
         return ResponseEntity.ok(tasks);
     }
 }

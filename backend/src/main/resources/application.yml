@@ -35,10 +35,11 @@ spring:
     show-sql: false
     open-in-view: false
   flyway:
+    enabled: true
     baseline-on-migrate: true
 logging:
   level:
-    root: WARN
+    root: INFO
 springdoc:
   api-docs:
     enabled: true
