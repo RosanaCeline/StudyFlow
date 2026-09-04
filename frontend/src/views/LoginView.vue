@@ -1,5 +1,6 @@
 <script setup>
     import { ref } from 'vue'
+    import { useRouter } from 'vue-router'
 
     const email = ref('')
     const password = ref('')
@@ -9,6 +10,8 @@
         email: '',
         password: ''
     })
+
+    const router = useRouter()
 
     function handleSubmit() {
         errors.value.email = ''
