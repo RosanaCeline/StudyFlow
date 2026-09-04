@@ -6,7 +6,7 @@ email:
 security:
   jwt:
     token:
-      secret-key: token_secreto
+      secret-key: ${STUDYFLOW_SECURITY_JWT_KEY}
       expire-length: 3600000
 spring:
   servlet:

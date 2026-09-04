@@ -1,5 +1,6 @@
 package com.studyflow.backend.controller;
 
+import com.studyflow.backend.controller.docs.SubjectControllerDocs;
 import com.studyflow.backend.data.dto.SubjectDTO;
 import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.service.SubjectService;
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/subjects")
 @RequiredArgsConstructor
-public class SubjectController {
+public class SubjectController implements SubjectControllerDocs {
 
     private SubjectService subjectService;
 

@@ -1,5 +1,6 @@
 package com.studyflow.backend.controller;
 
+import com.studyflow.backend.controller.docs.TaskControllerDocs;
 import com.studyflow.backend.data.dto.TaskDTO;
 import com.studyflow.backend.model.Priority;
 import com.studyflow.backend.model.Status;
@@ -16,7 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
-public class TaskController {
+public class TaskController implements TaskControllerDocs {
 
     private final TaskService taskService;
 
