@@ -16,19 +16,11 @@
             </RouterLink>
 
             <RouterLink
-                to="/app/tasks"
-                class="nav-link meu-link"
-            >
-                <i class="bi bi-check2-square me-2"></i>
-                Tarefas
-            </RouterLink>
-
-            <RouterLink
                 to="/app/subjects"
                 class="nav-link meu-link"
             >
                 <i class="bi bi-book me-2"></i>
-                Matérias
+                Disciplinas
             </RouterLink>
 
             <RouterLink
@@ -54,13 +46,16 @@
         color: inherit;
     }
 
-    .meu-link:hover {
+    .meu-link:not(.router-link-active):hover {
         color: var(--color-text-light);
         background-color: var(--color-background-hover);
     }
 
-    .router-link-active {
+    .router-link-active,
+    .router-link-active:focus,
+    .router-link-active:active{
         background-color: var(--color-body);
-        color: white;
+        color: white !important;
+        box-shadow: none;
     }
 </style>

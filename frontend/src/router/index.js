@@ -4,7 +4,8 @@ import AppLayout from '../layouts/AppLayout.vue'
 import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views//RegisterView.vue'
 import DashboardView from '../views/DashboardView.vue'
-import TasksView from '../views/TasksView.vue'
+import SubjectsView from '@/views/SubjectsView.vue'
+import SubjectDetailView from '@/views/SubjectDetailView.vue'
 
 const routes = [
     {
@@ -28,8 +29,12 @@ const routes = [
                 component: DashboardView
             },
             {
-                path: 'tasks',
-                component: TasksView
+                path: 'subjects',
+                component: SubjectsView
+            },
+            {
+                path: 'subjects/:id',
+                component: SubjectDetailView
             }
         ]
     }

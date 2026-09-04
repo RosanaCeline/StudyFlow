@@ -7,7 +7,7 @@
 
         <Sidebar />
 
-        <main class="grow p-4">
+        <main class="flex-grow-1 p-4 bg-light overflow-auto">
             <RouterView />
         </main>
 
