@@ -57,8 +57,6 @@ public class SubjectService {
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
         subjectRepository.delete(subject);
-
-        return;
     }
 
     public List<SubjectDTO> listAll () {
@@ -67,6 +65,13 @@ public class SubjectService {
         return subjects.stream()
                 .map(this::toSubjectDTO)
                 .toList();
+    }
+
+    public SubjectDTO findById(Long id) {
+        Subject subject = subjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada."));
+
+        return toSubjectDTO(subject);
     }
 
     private SubjectDTO toSubjectDTO(Subject subject) {

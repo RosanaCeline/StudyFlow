@@ -2,6 +2,7 @@ package com.studyflow.backend.controller;
 
 import com.studyflow.backend.controller.docs.SubjectControllerDocs;
 import com.studyflow.backend.data.dto.SubjectDTO;
+import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,11 @@ public class SubjectController implements SubjectControllerDocs {
     public ResponseEntity<List<SubjectDTO>> listAll() {
         List<SubjectDTO> subjects = subjectService.listAll();
         return ResponseEntity.ok(subjects);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<SubjectDTO> findById(@PathVariable Long id) {
+        SubjectDTO subject = subjectService.findById(id);
+        return ResponseEntity.ok(subject);
     }
 }
