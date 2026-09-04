@@ -14,7 +14,6 @@ import java.util.List;
 @Table(name = "subject")
 @Getter
 @Setter
-@NoArgsConstructor
 @RequiredArgsConstructor
 public class Subject {
 

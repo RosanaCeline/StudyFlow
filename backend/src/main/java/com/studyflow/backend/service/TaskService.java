@@ -9,8 +9,6 @@ import com.studyflow.backend.repository.SubjectRepository;
 import com.studyflow.backend.repository.TaskRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,7 +23,7 @@ public class TaskService {
     private SubjectRepository subjectRepository;
     private TaskRepository taskRepository;
 
-    public ResponseEntity<Task> create(TaskDTO dto) {
+    public Task create(TaskDTO dto) {
         Subject subject = subjectRepository.findById(dto.subjectId())
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
@@ -41,10 +39,10 @@ public class TaskService {
         );
         task.setSubject(subject);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(task);
+        return task;
     }
 
-    public ResponseEntity<Task> update(Long id, TaskDTO dto) {
+    public Task update(Long id, TaskDTO dto) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
@@ -68,21 +66,19 @@ public class TaskService {
             task.setCompletionDate(null);
         }
 
-        Task updatedTask = taskRepository.save(task);
-
-        return ResponseEntity.ok(updatedTask);
+        return taskRepository.save(task);
     }
 
-    public ResponseEntity<Void> delete(Long id) {
+    public void delete(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
         taskRepository.delete(task);
 
-        return ResponseEntity.noContent().build();
+        return;
     }
 
-    public ResponseEntity<Task> toggleCompleted(Long id) {
+    public Task toggleCompleted(Long id) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
@@ -98,7 +94,7 @@ public class TaskService {
 
         taskRepository.save(task);
 
-        return ResponseEntity.ok(task);
+        return task;
     }
 
     public List<Task> filter(Long subjectId, Status status, Priority priority) {

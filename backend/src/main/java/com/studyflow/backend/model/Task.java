@@ -1,10 +1,7 @@
 package com.studyflow.backend.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -12,7 +9,6 @@ import java.time.LocalDateTime;
 @Table(name = "task")
 @Getter
 @Setter
-@NoArgsConstructor
 @RequiredArgsConstructor
 public class Task {
 

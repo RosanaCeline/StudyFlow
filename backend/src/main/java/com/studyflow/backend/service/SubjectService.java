@@ -4,8 +4,6 @@ import com.studyflow.backend.data.dto.SubjectDTO;
 import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,7 +16,7 @@ public class SubjectService {
 
     private SubjectRepository subjectRepository;
 
-    public ResponseEntity<Subject> create(SubjectDTO dto) {
+    public Subject create(SubjectDTO dto) {
         Subject subject = new Subject();
 
         subject.setName(dto.name());
@@ -31,10 +29,10 @@ public class SubjectService {
 
         subjectRepository.save(subject);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(subject);
+        return subject;
     }
 
-    public ResponseEntity<Subject> update(Long id, SubjectDTO dto) {
+    public Subject update(Long id, SubjectDTO dto) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
@@ -45,16 +43,16 @@ public class SubjectService {
 
         subjectRepository.save(subject);
 
-        return ResponseEntity.ok(subject);
+        return subject;
     }
 
-    public ResponseEntity<Void> delete(Long id) {
+    public void delete(Long id) {
         Subject subject = subjectRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
 
         subjectRepository.delete(subject);
 
-        return ResponseEntity.noContent().build();
+        return;
     }
 
     public List<Subject> listAll () {
