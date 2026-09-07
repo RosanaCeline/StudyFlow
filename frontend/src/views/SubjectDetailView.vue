@@ -64,7 +64,6 @@ function goBack() {
 }
 
 function openColorPicker() {
-    // Lógica para abrir modal/popover de alteração de cor futuramente
     console.log('Abrir seletor de cor')
 }
 

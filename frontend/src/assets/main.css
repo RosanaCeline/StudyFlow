@@ -19,8 +19,25 @@ body {
   font-family: "Montserrat", sans-serif;
 }
 
-a {
+a,
+a:visited {
   color: var(--color-text-light);
+}
+
+a:hover,
+a:focus,
+a:active {
+  color: var(--color-text-light);
+}
+
+.btn-primary {
+  border: transparent !important;
+  color: white !important;
+}
+
+.btn-primary:hover {
+  filter: brightness(0.92);
+  transition: all 0.2s ease, color 0.2s ease;
 }
 
 @media (hover: hover) {

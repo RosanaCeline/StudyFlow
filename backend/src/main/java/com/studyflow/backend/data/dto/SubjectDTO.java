@@ -29,7 +29,7 @@ public record SubjectDTO(
         )
         String name,
 
-        @Size(max = 255, message = "A descrição deve possuir no máximo 255 caracteres")
+        @Size(max = 250, message = "A descrição deve possuir no máximo 250 caracteres")
         @Schema(
                 description = "Descrição da disciplina",
                 example = "Estudos relacionados a PostgreSQL e modelagem de dados",

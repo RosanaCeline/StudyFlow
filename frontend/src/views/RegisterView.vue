@@ -109,7 +109,7 @@
                                             >
                                             <button 
                                                 type="button" 
-                                                class="btn btn-outline-secondary" 
+                                                class="btn btn-primary" 
                                                 @click="showPassword = !showPassword"
                                                 tabindex="-1"
                                             >
@@ -195,13 +195,7 @@
         box-shadow: 0 0 0 .25rem rgba(42, 157, 144, .25);
     }
 
-    .btn {
-        border: 1px solid transparent;
-        background-color: var(--color-body-blue);
-        color: white;
-    }
-
-    .btn:hover {
-        filter: brightness(0.92);
+    .btn-primary {
+        background-color: var(--color-body-blue) !important;
     }
 </style>
