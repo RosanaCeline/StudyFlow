@@ -2,13 +2,29 @@
     import { onMounted, ref } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
     import { getSubjectById, updateSubject, deleteSubject } from '../services/subjectService'
+    import { listTasks, createTask, updateTask, updateTaskStatus, deleteTask } from '../services/taskService'
+    import TaskBoard from '../components/TaskBoard.vue'
 
     const route = useRoute()
     const router = useRouter()
 
     const subject = ref(null)
+    const tasks = ref([])
     const loading = ref(false)
     const error = ref('')
+
+    const taskForm = ref({
+        title: '',
+        description: '',
+        status: '',
+        priority: 'MEDIUM',
+        subjectId: null
+    })
+
+    const taskErrors = ref({
+        title: '',
+        description: ''
+    })
 
     const selectedColor = ref('')
     const updatingColor = ref(false)
@@ -38,17 +54,96 @@
         '#F3D9E8'
     ]
 
-    async function loadSubject() {
+    async function loadData() {
         loading.value = true
         error.value = ''
 
         try {
-            subject.value = await getSubjectById(route.params.id)
+            const subjectId = route.params.id
+            subject.value = await getSubjectById(subjectId)
             selectedColor.value = subject.value.color || subjectColors[0]
+
+            tasks.value = await listTasks({ subjectId })
         } catch (err) {
-            error.value = 'Não foi possível carregar a disciplina.'
+            error.value = 'Não foi possível carregar os dados da disciplina.'
         } finally {
             loading.value = false
+        }
+    }
+
+    function openCreateTaskModal(status) {
+        taskErrors.value = { title: '', description: '', priority: '', subjectId: '' }
+        
+        const initialStatus = status === 'COMPLETED' ? 'COMPLETED' 
+                        : status === 'IN_PROGRESS' ? 'IN_PROGRESS' 
+                        : 'PENDING'
+        taskForm.value = {
+            title: '',
+            description: '',
+            deadline: '',
+            priority: 'MEDIUM',
+            status: initialStatus,
+            subjectId: subject.value.id
+        }
+    }
+
+    async function handleCreateTask() {
+        taskErrors.value = { title: '', description: '', priority: '', subjectId: '' }
+        let isValid = true
+
+        const titleTrimmed = taskForm.value.title ? taskForm.value.title.trim() : ''
+
+        if (!titleTrimmed) {
+            taskErrors.value.title = 'O título da tarefa é obrigatório.'
+            isValid = false
+        } else if (titleTrimmed.length > 60) {
+            taskErrors.value.title = 'O título deve possuir no máximo 60 caracteres.'
+            isValid = false
+        }
+
+        if (taskForm.value.description && taskForm.value.description.length > 100) {
+            taskErrors.value.description = 'A descrição deve possuir no máximo 100 caracteres.'
+            isValid = false
+        }
+
+        if (!taskForm.value.priority) {
+            taskErrors.value.priority = 'A prioridade é obrigatória.'
+            isValid = false
+        }
+
+        if (!isValid) return
+
+        try {
+            const payload = {
+                ...taskForm.value,
+                title: titleTrimmed,
+                deadline: taskForm.value.deadline ? taskForm.value.deadline : null
+            }
+
+            const created = await createTask(payload)
+            tasks.value.push(created)
+
+            document.getElementById('createTaskModal').querySelector('.btn-close').click()
+        } catch (err) {
+            alert('Erro ao cadastrar a tarefa.')
+        }
+    }
+
+    async function handleUpdateTaskStatus({ taskId, status }) {
+        const targetTask = tasks.value.find(t => t.id === taskId)
+        if (!targetTask) return
+
+        const previousStatus = targetTask.status
+        targetTask.status = status
+
+        try {
+            await updateTask(taskId, {
+                ...targetTask,
+                subjectId: subject.value.id
+            })
+        } catch (err) {
+            targetTask.status = previousStatus
+            alert('Não foi possível alterar a situação da tarefa.')
         }
     }
 
@@ -203,7 +298,7 @@
     }
 
     onMounted(() => {
-        loadSubject()
+        loadData ()
     })
 </script>
 
@@ -310,37 +405,97 @@
                 </div>
             </div>
 
-            <div>
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div>
-                        <h3 class="mb-1 fw-normal">Tarefas</h3>
-                        <p class="text-muted mb-0 small">Tarefas vinculadas a esta disciplina.</p>
-                    </div>
+            <TaskBoard 
+                :tasks="subject.task || []" 
+                @create-task="openCreateTaskModal"
+                @update-status="handleUpdateTaskStatus"
+            />
 
-                    <button type="button" class="btn btn-primary rounded-pill px-3">
-                        <i class="bi bi-plus-lg me-2"></i>
-                        Nova tarefa
-                    </button>
-                </div>
-
-                <div v-if="!subject.task || subject.task.length === 0" class="card border-0 bg-light rounded-3">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-check2-square display-5 text-muted"></i>
-                        <h5 class="mt-3 fw-normal">Nenhuma tarefa</h5>
-                        <p class="text-muted mb-0 small">Ainda não existem tarefas nesta disciplina.</p>
-                    </div>
-                </div>
-
-                <div v-else class="row g-3">
-                    <div v-for="task in subject.task" :key="task.id" class="col-12">
-                        <div class="card shadow-sm border-0">
-                            <div class="card-body">
-                                <h5 class="mb-1 fs-6">{{ task.title }}</h5>
-                                <p v-if="task.description" class="text-muted mb-0 small">
-                                    {{ task.description }}
-                                </p>
-                            </div>
+            <div
+                class="modal fade"
+                id="createTaskModal"
+                tabindex="-1"
+                aria-labelledby="createTaskModalLabel"
+                aria-hidden="true"
+            >
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 id="createTaskModalLabel" class="modal-title fw-normal fs-4">
+                                Nova Tarefa
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
                         </div>
+
+                        <form @submit.prevent="handleCreateTask" novalidate>
+                            <div class="modal-body py-4">
+                                
+                                <!-- Título (max 60) -->
+                                <div class="form-floating mb-3">
+                                    <input
+                                        type="text"
+                                        class="form-control rounded-3"
+                                        :class="{ 'is-invalid': taskErrors.title }"
+                                        id="taskTitle"
+                                        v-model="taskForm.title"
+                                        placeholder="Título da tarefa"
+                                        maxlength="60"
+                                    >
+                                    <label for="taskTitle">Título da tarefa (obrigatório)</label>
+                                    <div class="invalid-feedback" v-if="taskErrors.title">
+                                        {{ taskErrors.title }}
+                                    </div>
+                                </div>
+
+                                <!-- Descrição (max 100) -->
+                                <div class="form-floating mb-3">
+                                    <textarea
+                                        class="form-control rounded-3"
+                                        :class="{ 'is-invalid': taskErrors.description }"
+                                        id="taskDesc"
+                                        v-model="taskForm.description"
+                                        placeholder="Descrição"
+                                        maxlength="100"
+                                        style="height: 100px; resize: none;"
+                                    ></textarea>
+                                    <label for="taskDesc">Descrição</label>
+                                    <div class="invalid-feedback" v-if="taskErrors.description">
+                                        {{ taskErrors.description }}
+                                    </div>
+                                </div>
+
+                                <!-- Prazo (Deadline) -->
+                                <div class="mb-3">
+                                    <label for="taskDeadline" class="form-label small text-muted mb-1">Prazo de entrega</label>
+                                    <input
+                                        type="datetime-local"
+                                        class="form-control rounded-3"
+                                        id="taskDeadline"
+                                        v-model="taskForm.deadline"
+                                    >
+                                </div>
+
+                                <!-- Prioridade -->
+                                <div>
+                                    <label class="form-label small text-muted mb-1">Prioridade</label>
+                                    <select class="form-select rounded-3" v-model="taskForm.priority">
+                                        <option value="LOW">Baixa</option>
+                                        <option value="MEDIUM">Média</option>
+                                        <option value="HIGH">Alta</option>
+                                    </select>
+                                </div>
+
+                            </div>
+
+                            <div class="modal-footer border-0 pt-0">
+                                <button type="button" class="btn btn-link text-decoration-none text-secondary" data-bs-dismiss="modal">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-primary px-4">
+                                    Criar
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

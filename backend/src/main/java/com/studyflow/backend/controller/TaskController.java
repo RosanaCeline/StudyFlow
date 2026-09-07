@@ -40,9 +40,9 @@ public class TaskController implements TaskControllerDocs {
         return ResponseEntity.noContent().build();
     }
 
-    @PatchMapping("/{id}/toggle")
-    public ResponseEntity<TaskDTO> toggleCompleted(@PathVariable Long id) {
-        TaskDTO task = taskService.toggleCompleted(id);
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<TaskDTO> toggleStatus(@PathVariable Long id, @RequestParam Status status) {
+        TaskDTO task = taskService.toggleStatus(id, status);
         return ResponseEntity.ok(task);
     }
 

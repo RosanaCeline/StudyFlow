@@ -86,18 +86,18 @@ public class TaskService {
         return;
     }
 
-    public TaskDTO toggleCompleted(Long id) {
+    public TaskDTO toggleStatus(Long id, Status status) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
+        task.setStatus(status);
+
         if(task.getStatus() == Status.COMPLETED) {
-            task.setStatus(Status.PENDING);
-            task.setCompletionDate(null);
-        } else {
-            task.setStatus(Status.COMPLETED);
             task.setCompletionDate(
                     LocalDateTime.now(ZoneId.of("America/Sao_Paulo"))
             );
+        } else {
+            task.setCompletionDate(null);
         }
 
         Task savedTask = taskRepository.save(task);

@@ -48,14 +48,15 @@ public interface TaskControllerDocs {
             @Parameter(description = "ID da tarefa", required = true) @PathVariable Long id
     );
 
-    @Operation(summary = "Alterna o status de conclusão da tarefa", description = "Alterna entre COMPLETED e PENDING, atualizando automaticamente a data de conclusão.")
+    @Operation(summary = "Alterna o status de conclusão da tarefa", description = "Alterna entre COMPLETED, IN_PROGRESS e PENDING, atualizando automaticamente a data de conclusão.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Status alternado com sucesso"),
             @ApiResponse(responseCode = "404", description = "Tarefa não encontrada")
     })
-    @PatchMapping("/{id}/toggle")
-    ResponseEntity<TaskDTO> toggleCompleted(
-            @Parameter(description = "ID da tarefa", required = true) @PathVariable Long id
+    @PatchMapping("/{id}/status")
+    ResponseEntity<TaskDTO> toggleStatus(
+            @Parameter(description = "ID da tarefa", required = true) @PathVariable Long id,
+            @Parameter(description = "Status da tarefa", required = true) @RequestParam Status status
     );
 
     @Operation(summary = "Lista e filtra tarefas", description = "Retorna uma lista de tarefas. Permite filtrar por disciplina, status e prioridade.")
