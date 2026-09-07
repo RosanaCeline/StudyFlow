@@ -1,7 +1,7 @@
 <script setup>
     import { onMounted, ref } from 'vue'
     import { useRouter } from 'vue-router'
-    import { listSubjects, createSubject, deleteSubject } from '../services/subjectService'
+    import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
 
     const router = useRouter()
 
@@ -23,6 +23,7 @@
         situation: 'ACTIVE'
     })
 
+    const editingSubjectId = ref(null)
     const subjectToDelete = ref(null)
 
     const subjectColors = [
@@ -74,6 +75,22 @@
         }
     }
 
+    function openEditModal(subject) {
+        editingSubjectId.value = subject.id
+        newSubject.value = {
+            name: subject.name,
+            description: subject.description || '',
+            color: subject.color || subjectColors[0],
+            situation: subject.situation
+        }
+        errors.value = {
+            name: '',
+            description: '',
+            color: '',
+            situation: ''
+        }
+    }
+
     async function loadSubjects() {
         loading.value = true
         error.value = ''
@@ -87,7 +104,7 @@
         }
     }
 
-    async function handleCreate() {
+    async function handleSubmit() {
         errors.value = {
             name: '',
             description: '',
@@ -120,21 +137,23 @@
         if (!isValid) return
 
         try {
-            const createdSubject = await createSubject(newSubject.value)
-
-            subjects.value.push(createdSubject)
-
-            newSubject.value = {
-                name: '',
-                description: '',
-                color: '#DDEBFF',
-                situation: 'ACTIVE'
+            if (editingSubjectId.value) {
+                const updated = await updateSubject(editingSubjectId.value, newSubject.value)
+                const index = subjects.value.findIndex(s => s.id === editingSubjectId.value)
+                if (index !== -1) {
+                    subjects.value[index] = updated
+                }
+            } else {
+                const createdSubject = await createSubject(newSubject.value)
+                subjects.value.push(createdSubject)
             }
 
+            resetNewSubjectForm()
             document.getElementById('createSubjectModal').querySelector('.btn-close').click()
-
         } catch (err) {
-            error.value = 'Não foi possível cadastrar a disciplina.'
+            error.value = editingSubjectId.value 
+                ? 'Não foi possível atualizar a disciplina.' 
+                : 'Não foi possível cadastrar a disciplina.'
         }
     }
 
@@ -246,6 +265,18 @@
                                 <li>
                                     <button 
                                         type="button"
+                                        class="dropdown-item d-flex align-items-center gap-2 py-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#createSubjectModal"
+                                        @click.stop="openEditModal(subject)"
+                                    >
+                                        <i class="bi bi-pencil text-secondary"></i>
+                                        <span>Editar disciplina</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button 
+                                        type="button"
                                         class="dropdown-item text-danger d-flex align-items-center gap-2 py-2"
                                         data-bs-toggle="modal"
                                         data-bs-target="#deleteSubjectModal"
@@ -288,7 +319,7 @@
                 <div class="modal-content border-0 shadow-lg rounded-4">
                     <div class="modal-header border-0 pb-0">
                         <h5 id="createSubjectModalLabel" class="modal-title fw-normal fs-4">
-                            Criar disciplina
+                            {{ editingSubjectId ? 'Editar disciplina' : 'Criar disciplina' }}
                         </h5>
                         <button
                             type="button"
@@ -298,7 +329,7 @@
                         ></button>
                     </div>
 
-                    <form @submit.prevent="handleCreate" novalidate>
+                    <form @submit.prevent="handleSubmit" novalidate>
                         <div class="modal-body py-4">
                             <div class="form-floating mb-3">
                                 <input
@@ -377,7 +408,7 @@
                                 Cancelar
                             </button>
                             <button type="submit" class="btn btn-primary px-4">
-                                Criar
+                                {{ editingSubjectId ? 'Salvar' : 'Criar' }}
                             </button>
                         </div>
                     </form>

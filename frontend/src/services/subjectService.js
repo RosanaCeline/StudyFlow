@@ -51,3 +51,19 @@ export async function deleteSubject(id) {
 
     return await response.json()
 }
+
+export async function updateSubject(id, subject) {
+    const response = await fetch(`${API_URL}/subjects/${id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(subject)
+    })
+
+    if (!response.ok) {
+        throw new Error('Erro ao atualizar disciplina.')
+    }
+
+    return await response.json()
+}
