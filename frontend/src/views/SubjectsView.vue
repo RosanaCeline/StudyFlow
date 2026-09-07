@@ -1,192 +1,95 @@
 <script setup>
-    import { onMounted, ref } from 'vue'
-    import { useRouter } from 'vue-router'
-    import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
+import SubjectCard from '../components/SubjectCard.vue'
+import SubjectFormModal from '../components/SubjectFormModal.vue'
+import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
 
-    const router = useRouter()
+const router = useRouter()
 
-    const subjects = ref([])
-    const loading = ref(false)
-    const error = ref('')
+const subjects = ref([])
+const loading = ref(false)
+const error = ref('')
 
-    const errors = ref({
-        name: '',
-        description: '',
-        color: '',
-        situation: ''
-    })
+const editingSubject = ref(null)
+const subjectToDelete = ref(null)
+const modalFormRef = ref(null)
 
-    const newSubject = ref({
-        name: '',
-        description: '',
-        color: '#DDEBFF',
-        situation: 'ACTIVE'
-    })
+async function loadSubjects() {
+    loading.value = true
+    error.value = ''
 
-    const editingSubjectId = ref(null)
-    const subjectToDelete = ref(null)
-
-    const subjectColors = [
-        '#DDEBFF',
-        '#E4D9FF',
-        '#F8D7DA',
-        '#FFE5B4',
-        '#FFF3BF',
-        '#DFF5E1',
-        '#D5F5F6',
-        '#F3D9E8'
-    ]
-
-    function selectSubjectColor(color) {
-        newSubject.value.color = color
-        errors.value.color = ''
+    try {
+        subjects.value = await listSubjects()
+    } catch (err) {
+        error.value = 'Não foi possível carregar as disciplinas.'
+    } finally {
+        loading.value = false
     }
+}
 
-    function getSituationLabel(situation) {
-        const labels = {
-            ACTIVE: 'Ativa',
-            COMPLETED: 'Finalizada',
-            ARCHIVED: 'Arquivada'
-        }
-        return labels[situation] || 'Desconhecida'
+function openCreateModal() {
+    editingSubject.value = null
+    if (modalFormRef.value) {
+        modalFormRef.value.resetForm()
     }
+}
 
-    function getSituationBadgeClass(situation) {
-        const classes = {
-            ACTIVE: 'bg-success-subtle text-success',
-            COMPLETED: 'bg-primary-subtle text-primary',
-            ARCHIVED: 'bg-secondary-subtle text-secondary'
+function openEditModal(subject) {
+    editingSubject.value = { ...subject }
+}
+
+function openDeleteModal(subject) {
+    subjectToDelete.value = subject
+}
+
+function closeModal(modalId) {
+    const modalEl = document.getElementById(modalId)
+    const closeBtn = modalEl?.querySelector('.btn-close')
+    if (closeBtn) closeBtn.click()
+}
+
+async function handleFormSubmit(payload) {
+    try {
+        if (editingSubject.value?.id) {
+            const updated = await updateSubject(editingSubject.value.id, payload)
+            const index = subjects.value.findIndex(s => s.id === editingSubject.value.id)
+            if (index !== -1) subjects.value[index] = updated
+        } else {
+            const created = await createSubject(payload)
+            subjects.value.unshift(created)
         }
-        return classes[situation] || 'bg-light text-dark'
+
+        closeModal('createSubjectModal')
+        editingSubject.value = null
+    } catch (err) {
+        error.value = editingSubject.value?.id
+            ? 'Não foi possível atualizar a disciplina.' 
+            : 'Não foi possível cadastrar a disciplina.'
     }
+}
 
-    function resetNewSubjectForm() {
-        newSubject.value = {
-            name: '',
-            description: '',
-            color: subjectColors[0],
-            situation: 'ACTIVE'
-        }
-        errors.value = {
-            name: '',
-            description: '',
-            color: '',
-            situation: ''
-        }
+async function handleDelete() {
+    if (!subjectToDelete.value) return
+
+    try {
+        await deleteSubject(subjectToDelete.value.id)
+        subjects.value = subjects.value.filter(s => s.id !== subjectToDelete.value.id)
+        subjectToDelete.value = null
+        closeModal('deleteSubjectModal')
+    } catch (err) {
+        error.value = 'Não foi possível excluir a disciplina.'
     }
+}
 
-    function openEditModal(subject) {
-        editingSubjectId.value = subject.id
-        newSubject.value = {
-            name: subject.name,
-            description: subject.description || '',
-            color: subject.color || subjectColors[0],
-            situation: subject.situation
-        }
-        errors.value = {
-            name: '',
-            description: '',
-            color: '',
-            situation: ''
-        }
-    }
+function navigateToSubject(id) {
+    router.push(`/app/subjects/${id}`)
+}
 
-    async function loadSubjects() {
-        loading.value = true
-        error.value = ''
-
-        try {
-            subjects.value = await listSubjects()
-        } catch (err) {
-            error.value = 'Não foi possível carregar as disciplinas.'
-        } finally {
-            loading.value = false
-        }
-    }
-
-    async function handleSubmit() {
-        errors.value = {
-            name: '',
-            description: '',
-            color: '',
-            situation: ''
-        }
-
-        let isValid = true
-
-        const nameTrimmed = newSubject.value.name ? newSubject.value.name.trim() : ''
-
-        if (!nameTrimmed) {
-            errors.value.name = 'O nome da disciplina é obrigatório.'
-            isValid = false
-        } else if (nameTrimmed.length > 100) {
-            errors.value.name = 'O nome deve possuir no máximo 100 caracteres.'
-            isValid = false
-        }
-
-        if (newSubject.value.description && newSubject.value.description.length > 250) {
-            errors.value.description = 'A descrição deve possuir no máximo 250 caracteres.'
-            isValid = false
-        }
-
-        if (!newSubject.value.color) {
-            errors.value.color = 'Selecione uma cor para a disciplina.'
-            isValid = false
-        }
-
-        if (!isValid) return
-
-        try {
-            if (editingSubjectId.value) {
-                const updated = await updateSubject(editingSubjectId.value, newSubject.value)
-                const index = subjects.value.findIndex(s => s.id === editingSubjectId.value)
-                if (index !== -1) {
-                    subjects.value[index] = updated
-                }
-            } else {
-                const createdSubject = await createSubject(newSubject.value)
-                subjects.value.unshift(createdSubject)
-            }
-
-            resetNewSubjectForm()
-            document.getElementById('createSubjectModal').querySelector('.btn-close').click()
-        } catch (err) {
-            error.value = editingSubjectId.value 
-                ? 'Não foi possível atualizar a disciplina.' 
-                : 'Não foi possível cadastrar a disciplina.'
-        }
-    }
-
-    onMounted(() => {
-        loadSubjects()
-    })
-
-    function openDeleteModal(subject) {
-        subjectToDelete.value = subject
-    }
-
-    async function handleDelete() {
-        if (!subjectToDelete.value) return
-
-        try {
-            await deleteSubject(subjectToDelete.value.id)
-
-            subjects.value = subjects.value.filter(
-                subject => subject.id !== subjectToDelete.value.id
-            )
-
-            subjectToDelete.value = null
-
-            document.getElementById('deleteSubjectModal').querySelector('.btn-close').click()
-
-        } catch (err) {
-            error.value = 'Não foi possível excluir a disciplina.'
-        }
-    }
-
-    onMounted(() => {
-        loadSubjects()
-    })
+onMounted(() => {
+    loadSubjects()
+})
 </script>
 
 <template>
@@ -201,7 +104,7 @@
                 class="btn btn-primary px-3 shadow-sm d-flex align-items-center gap-2"
                 data-bs-toggle="modal"
                 data-bs-target="#createSubjectModal"
-                @click="resetNewSubjectForm"
+                @click="openCreateModal"
             >
                 <i class="bi bi-plus-lg fs-5"></i>
                 <span>Criar disciplina</span>
@@ -229,6 +132,7 @@
                 class="btn btn-outline-primary px-4 mt-2"
                 data-bs-toggle="modal"
                 data-bs-target="#createSubjectModal"
+                @click="openCreateModal"
             >
                 Criar disciplina
             </button>
@@ -240,303 +144,30 @@
                 :key="subject.id"
                 class="col-12 col-md-6 col-xl-4"
             >
-                <div 
-                    class="card classroom-card rounded-3 h-100 shadow-sm border-0 cursor-pointer"
-                    @click="$router.push(`/app/subjects/${subject.id}`)"
-                >
-                    <div 
-                        class="card-header-banner p-3 d-flex flex-column justify-content-between"
-                        :style="{ backgroundColor: subject.color || '#DDEBFF' }"
-                    >
-                        <div class="d-flex justify-content-between align-items-start">
-                            <h4 class="card-title text-truncate mb-0 fw-normal" :title="subject.name">
-                                {{ subject.name }}
-                            </h4>
-                            <button 
-                                class="btn btn-dots p-0 opacity-75 hover-opacity-100"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                @click.stop
-                            >
-                                <i class="btn-ic bi bi-three-dots-vertical fs-5"></i>
-                            </button>
-
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
-                                <li>
-                                    <button 
-                                        type="button"
-                                        class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#createSubjectModal"
-                                        @click.stop="openEditModal(subject)"
-                                    >
-                                        <i class="bi bi-pencil text-secondary"></i>
-                                        <span>Editar disciplina</span>
-                                    </button>
-                                </li>
-                                <li>
-                                    <button 
-                                        type="button"
-                                        class="dropdown-item text-danger d-flex align-items-center gap-2 py-2"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#deleteSubjectModal"
-                                        @click.stop="openDeleteModal(subject)"
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                        <span>Excluir disciplina</span>
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                        <p class="small text-truncate mb-0">
-                            {{ subject.description || 'Sem descrição' }}
-                        </p>
-                    </div>
-
-                    <div class="card-body bg-white d-flex flex-column justify-content-between p-3">
-                        <div class="d-flex align-items-center justify-content-between text-muted small">
-                            <span>Status:</span>
-                            <span 
-                                class="badge rounded-pill fw-normal"
-                                :class="getSituationBadgeClass(subject.situation)"
-                            >
-                                {{ getSituationLabel(subject.situation) }}
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                <SubjectCard
+                    :subject="subject"
+                    @click="navigateToSubject"
+                    @edit="openEditModal"
+                    @delete="openDeleteModal"
+                />
             </div>
         </div>
 
-        <div
-            class="modal fade"
-            id="createSubjectModal"
-            tabindex="-1"
-            aria-labelledby="createSubjectModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg rounded-4">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 id="createSubjectModalLabel" class="modal-title fw-normal fs-4">
-                            {{ editingSubjectId ? 'Editar disciplina' : 'Criar disciplina' }}
-                        </h5>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Fechar"
-                        ></button>
-                    </div>
+        <SubjectFormModal
+            ref="modalFormRef"
+            :editing-subject="editingSubject"
+            @submit="handleFormSubmit"
+        />
 
-                    <form @submit.prevent="handleSubmit" novalidate>
-                        <div class="modal-body py-4">
-                            <div class="form-floating mb-3">
-                                <input
-                                    type="text"
-                                    class="form-control rounded-3"
-                                    :class="{ 'is-invalid': errors.name }"
-                                    id="subjectName"
-                                    v-model="newSubject.name"
-                                    placeholder="Nome da disciplina"
-                                >
-                                <label for="subjectName">Nome da disciplina (obrigatório)</label>
-                                <div class="invalid-feedback" v-if="errors.name">
-                                    {{ errors.name }}
-                                </div>
-                            </div>
-
-                            <div class="form-floating mb-3">
-                                <textarea
-                                    class="form-control rounded-3"
-                                    :class="{ 'is-invalid': errors.description }"
-                                    id="subjectDesc"
-                                    v-model="newSubject.description"
-                                    placeholder="Descrição"
-                                    style="height: 100px"
-                                ></textarea>
-                                <label for="subjectDesc">Descrição ou seção</label>
-                                <div class="invalid-feedback" v-if="errors.description">
-                                    {{ errors.description }}
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label small text-muted mb-2">Cor do tema</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <button
-                                        v-for="color in subjectColors"
-                                        :key="color"
-                                        type="button"
-                                        class="color-option rounded-circle border-0 p-0 d-flex align-items-center justify-content-center"
-                                        :class="{ selected: newSubject.color === color }"
-                                        :style="{ backgroundColor: color }"
-                                        :title="`Selecionar cor ${color}`"
-                                        @click="selectSubjectColor(color)"
-                                    >
-                                        <i
-                                            v-if="newSubject.color === color"
-                                            class="bi bi-check2 text-dark fs-5"
-                                        ></i>
-                                    </button>
-                                    <div class="invalid-feedback d-block" v-if="errors.color">
-                                        {{ errors.color }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="form-label small text-muted mb-1">Situação</label>
-                                <select class="form-select rounded-3" v-model="newSubject.situation">
-                                    <option value="ACTIVE">Ativa</option>
-                                    <option value="COMPLETED">Finalizada</option>
-                                    <option value="ARCHIVED">Arquivada</option>
-                                </select>
-                                <div class="invalid-feedback" v-if="errors.situation">
-                                    {{ errors.situation }}
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="modal-footer border-0 pt-0">
-                            <button
-                                type="button"
-                                class="btn btn-link text-decoration-none text-secondary btn-cancel"
-                                data-bs-dismiss="modal"
-                            >
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn btn-primary px-4">
-                                {{ editingSubjectId ? 'Salvar' : 'Criar' }}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div
-            class="modal fade"
-            id="deleteSubjectModal"
-            tabindex="-1"
-            aria-labelledby="deleteSubjectModalLabel"
-            aria-hidden="true"
-        >
-            <div class="modal-dialog modal-dialog-centered modal-md">
-                <div class="modal-content border-0 shadow-lg rounded-4">
-                    <div class="modal-header border-0 pb-0">
-                        <h5 id="deleteSubjectModalLabel" class="modal-title fw-normal fs-5">
-                            Excluir disciplina
-                        </h5>
-                        <button
-                            type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Fechar"
-                        ></button>
-                    </div>
-
-                    <div class="modal-body py-3">
-                        <p class="mb-2">
-                            Tem certeza que deseja excluir <strong class="text-break text-wrap">{{ subjectToDelete?.name }}</strong>?
-                        </p>
-                        <small class="text-muted d-block">
-                            Essa ação não poderá ser desfeita.
-                        </small>
-                    </div>
-
-                    <div class="modal-footer border-0 pt-0">
-                        <button
-                            type="button"
-                            class="btn btn-link text-decoration-none text-secondary"
-                            data-bs-dismiss="modal"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="button"
-                            class="btn btn-danger px-3 rounded-3"
-                            @click="handleDelete"
-                        >
-                            <i class="bi bi-trash me-1"></i>
-                            Excluir
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ConfirmDeleteModal
+            :subject-name="subjectToDelete?.name"
+            @confirm="handleDelete"
+        />
     </div>
 </template>
 
 <style scoped>
-    .classroom-card {
-        overflow: hidden;
-        transition: box-shadow 0.2s ease, transform 0.2s ease;
-    }
-
-    .classroom-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.12) !important;
-    }
-
-    .card-header-banner {
-        height: 100px;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-    }
-
-    .hover-opacity-100:hover {
-        opacity: 1 !important;
-    }
-
-    .btn-primary {
-        background-color: var(--color-body) !important;
-    }
-
-    .btn-dots {
-        background: transparent !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-
-    .btn-cancel:hover {
-        color: var(--color-text-light);
-        background-color: var(--color-background-hover);
-    }
-
-    .cursor-pointer {
-        cursor: pointer;
-    }
-
-    textarea.form-control {
-        resize: none;
-    }
-
-    .form-floating > .form-control:focus ~ label,
-    .form-floating > .form-control:not(:placeholder-shown) ~ label {
-        color: var(--color-text-light);
-    }
-
-    .form-control:focus,
-     .form-select:focus {
-        border-color: var(--color-body-light);
-        box-shadow: 0 0 0 1px var(--color-body-light);
-    }
-
-    .color-option {
-        width: 36px;
-        height: 36px;
-        cursor: pointer;
-        transition: transform 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .color-option:hover {
-        transform: scale(1.1);
-    }
-
-    .color-option.selected {
-        box-shadow: 0 0 0 3px white, 0 0 0 5px var(--color-body-light);
-    }
+.btn-primary {
+    background-color: var(--color-body) !important;
+}
 </style>
