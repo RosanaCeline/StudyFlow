@@ -145,7 +145,7 @@
                 }
             } else {
                 const createdSubject = await createSubject(newSubject.value)
-                subjects.value.push(createdSubject)
+                subjects.value.unshift(createdSubject)
             }
 
             resetNewSubjectForm()

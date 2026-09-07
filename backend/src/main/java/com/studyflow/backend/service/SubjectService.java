@@ -60,7 +60,7 @@ public class SubjectService {
     }
 
     public List<SubjectDTO> listAll () {
-        List<Subject> subjects = subjectRepository.findAll();
+        List<Subject> subjects = subjectRepository.findAllByOrderByIdDesc();
 
         return subjects.stream()
                 .map(this::toSubjectDTO)
