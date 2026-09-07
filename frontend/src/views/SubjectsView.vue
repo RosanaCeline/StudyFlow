@@ -1,7 +1,9 @@
 <script setup>
     import { onMounted, ref } from 'vue'
     import { useRouter } from 'vue-router'
-    import { listSubjects, createSubject } from '../services/subjectService'
+    import { listSubjects, createSubject, deleteSubject } from '../services/subjectService'
+
+    const router = useRouter()
 
     const subjects = ref([])
     const loading = ref(false)
@@ -14,8 +16,6 @@
         situation: ''
     })
 
-    const router = useRouter()
-
     const newSubject = ref({
         name: '',
         description: '',
@@ -23,8 +23,10 @@
         situation: 'ACTIVE'
     })
 
+    const subjectToDelete = ref(null)
+
     const subjectColors = [
-        '##DDEBFF',
+        '#DDEBFF',
         '#E4D9FF',
         '#F8D7DA',
         '#FFE5B4',
@@ -55,6 +57,21 @@
             ARCHIVED: 'bg-secondary-subtle text-secondary'
         }
         return classes[situation] || 'bg-light text-dark'
+    }
+
+    function resetNewSubjectForm() {
+        newSubject.value = {
+            name: '',
+            description: '',
+            color: subjectColors[0],
+            situation: 'ACTIVE'
+        }
+        errors.value = {
+            name: '',
+            description: '',
+            color: '',
+            situation: ''
+        }
     }
 
     async function loadSubjects() {
@@ -124,6 +141,33 @@
     onMounted(() => {
         loadSubjects()
     })
+
+    function openDeleteModal(subject) {
+        subjectToDelete.value = subject
+    }
+
+    async function handleDelete() {
+        if (!subjectToDelete.value) return
+
+        try {
+            await deleteSubject(subjectToDelete.value.id)
+
+            subjects.value = subjects.value.filter(
+                subject => subject.id !== subjectToDelete.value.id
+            )
+
+            subjectToDelete.value = null
+
+            document.getElementById('deleteSubjectModal').querySelector('.btn-close').click()
+
+        } catch (err) {
+            error.value = 'Não foi possível excluir a disciplina.'
+        }
+    }
+
+    onMounted(() => {
+        loadSubjects()
+    })
 </script>
 
 <template>
@@ -138,6 +182,7 @@
                 class="btn btn-primary px-3 shadow-sm d-flex align-items-center gap-2"
                 data-bs-toggle="modal"
                 data-bs-target="#createSubjectModal"
+                @click="resetNewSubjectForm"
             >
                 <i class="bi bi-plus-lg fs-5"></i>
                 <span>Criar disciplina</span>
@@ -177,7 +222,7 @@
                 class="col-12 col-md-6 col-xl-4"
             >
                 <div 
-                    class="card classroom-card h-100 shadow-sm border-0 cursor-pointer"
+                    class="card classroom-card rounded-3 h-100 shadow-sm border-0 cursor-pointer"
                     @click="$router.push(`/app/subjects/${subject.id}`)"
                 >
                     <div 
@@ -190,10 +235,27 @@
                             </h4>
                             <button 
                                 class="btn btn-dots p-0 opacity-75 hover-opacity-100"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
                                 @click.stop
                             >
                                 <i class="btn-ic bi bi-three-dots-vertical fs-5"></i>
                             </button>
+
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                                <li>
+                                    <button 
+                                        type="button"
+                                        class="dropdown-item text-danger d-flex align-items-center gap-2 py-2"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#deleteSubjectModal"
+                                        @click.stop="openDeleteModal(subject)"
+                                    >
+                                        <i class="bi bi-trash"></i>
+                                        <span>Excluir disciplina</span>
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                         <p class="small text-truncate mb-0">
                             {{ subject.description || 'Sem descrição' }}
@@ -323,12 +385,61 @@
             </div>
         </div>
 
+        <div
+            class="modal fade"
+            id="deleteSubjectModal"
+            tabindex="-1"
+            aria-labelledby="deleteSubjectModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered modal-md">
+                <div class="modal-content border-0 shadow-lg rounded-4">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 id="deleteSubjectModalLabel" class="modal-title fw-normal fs-5">
+                            Excluir disciplina
+                        </h5>
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Fechar"
+                        ></button>
+                    </div>
+
+                    <div class="modal-body py-3">
+                        <p class="mb-2">
+                            Tem certeza que deseja excluir <strong class="text-break text-wrap">{{ subjectToDelete?.name }}</strong>?
+                        </p>
+                        <small class="text-muted d-block">
+                            Essa ação não poderá ser desfeita.
+                        </small>
+                    </div>
+
+                    <div class="modal-footer border-0 pt-0">
+                        <button
+                            type="button"
+                            class="btn btn-link text-decoration-none text-secondary"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="button"
+                            class="btn btn-danger px-3 rounded-3"
+                            @click="handleDelete"
+                        >
+                            <i class="bi bi-trash me-1"></i>
+                            Excluir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
     .classroom-card {
-        border-radius: 0.75rem;
         overflow: hidden;
         transition: box-shadow 0.2s ease, transform 0.2s ease;
     }

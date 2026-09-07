@@ -35,3 +35,19 @@ export async function getSubjectById(id) {
 
     return await response.json()
 }
+
+export async function deleteSubject(id) {
+    const response = await fetch(`${API_URL}/subjects/${id}`, {
+        method: 'DELETE'
+    })
+
+    if (!response.ok) {
+        throw new Error('Erro ao excluir disciplina.')
+    }
+
+    if (response.status === 204) {
+        return true
+    }
+
+    return await response.json()
+}
