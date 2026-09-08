@@ -1,88 +1,98 @@
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { registerUser } from '../services/authService'
+    import { ref } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { registerUser } from '../services/authService'
 
-const name = ref('')
-const email = ref('')
-const password = ref('')
-const showPassword = ref(false)
+    const name = ref('')
+    const email = ref('')
+    const password = ref('')
+    const showPassword = ref(false)
 
-const loading = ref(false)
-const apiError = ref('')
+    const loading = ref(false)
+    const apiError = ref('')
 
-const errors = ref({
-  name: '',
-  email: '',
-  password: ''
-})
+    const errors = ref({
+    name: '',
+    email: '',
+    password: ''
+    })
 
-const router = useRouter()
+    const router = useRouter()
 
-function validate() {
-  errors.value = { name: '', email: '', password: '' }
-  apiError.value = ''
-  let isValid = true
+    function validate() {
+    errors.value = { name: '', email: '', password: '' }
+    apiError.value = ''
+    let isValid = true
 
-  const nameTrimmed = name.value.trim()
-  if (!nameTrimmed) {
-    errors.value.name = 'O nome é obrigatório.'
-    isValid = false
-  } else if (nameTrimmed.length > 150) {
-    errors.value.name = 'O nome deve ter no máximo 150 caracteres.'
-    isValid = false
-  }
-
-  const emailTrimmed = email.value.trim()
-  if (!emailTrimmed) {
-    errors.value.email = 'O e-mail é obrigatório.'
-    isValid = false
-  } else if (!emailTrimmed.includes('@') || emailTrimmed.length > 255) {
-    errors.value.email = 'Insira um e-mail válido.'
-    isValid = false
-  }
-
-  if (!password.value) {
-    errors.value.password = 'A senha é obrigatória.'
-    isValid = false
-  } else if (password.value.length > 70) {
-    errors.value.password = 'A senha deve ter no máximo 70 caracteres.'
-    isValid = false
-  }
-
-  return isValid
-}
-
-async function handleSubmit() {
-  if (!validate()) return
-
-  loading.value = true
-  apiError.value = ''
-
-  try {
-    const payload = {
-      name: name.value.trim(),
-      email: email.value.trim(),
-      password: password.value
+    const nameTrimmed = name.value.trim()
+    if (!nameTrimmed) {
+        errors.value.name = 'O nome é obrigatório.'
+        isValid = false
+    } else if (nameTrimmed.length > 150) {
+        errors.value.name = 'O nome deve ter no máximo 150 caracteres.'
+        isValid = false
     }
 
-    const tokenDto = await registerUser(payload)
-
-    if (tokenDto?.token) {
-      localStorage.setItem('token', tokenDto.token)
+    const emailTrimmed = email.value.trim()
+    if (!emailTrimmed) {
+        errors.value.email = 'O e-mail é obrigatório.'
+        isValid = false
+    } else if (!emailTrimmed.includes('@') || emailTrimmed.length > 255) {
+        errors.value.email = 'Insira um e-mail válido.'
+        isValid = false
     }
 
-    router.push('/app/dashboard')
-  } catch (err) {
-    if (err.response && err.response.data) {
-      apiError.value = err.response.data.message || 'Erro ao realizar o cadastro. Verifique os dados.'
-    } else {
-      apiError.value = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
+    if (!password.value) {
+        errors.value.password = 'A senha é obrigatória.'
+        isValid = false
+    } else if (password.value.length > 70) {
+        errors.value.password = 'A senha deve ter no máximo 70 caracteres.'
+        isValid = false
     }
-  } finally {
-    loading.value = false
-  }
-}
+
+    return isValid
+    }
+
+    async function handleSubmit() {
+    if (!validate()) return
+
+    loading.value = true
+    apiError.value = ''
+
+    try {
+        const payload = {
+        name: name.value.trim(),
+        email: email.value.trim(),
+        password: password.value
+        }
+
+        const tokenDto = await registerUser(payload)
+
+        if (tokenDto?.token) {
+        localStorage.setItem('token', tokenDto.token)
+        }
+
+        router.push('/app/dashboard')
+    } catch (err) {
+        if (err.response) {
+        const status = err.response.status
+        const data = err.response.data
+
+        if (status === 403 || (data.message && data.message.toLowerCase().includes('e-mail'))) {
+            apiError.value = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.'
+            errors.value.email = 'E-mail já em uso.'
+        } else if (data.message) {
+            apiError.value = data.message
+        } else {
+            apiError.value = 'Erro ao realizar o cadastro. Verifique os dados informados.'
+        }
+        } else {
+        apiError.value = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
+        }
+    } finally {
+        loading.value = false
+    }
+    }
 </script>
 
 <template>
