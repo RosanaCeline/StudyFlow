@@ -2,7 +2,7 @@
     import { onMounted, ref } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
     import { getSubjectById, updateSubject, deleteSubject } from '../services/subjectService'
-    import { listTasks, createTask, updateTask, updateTaskStatus } from '../services/taskService'
+    import { listTasks, createTask, updateTask, updateTaskStatus, deleteTask } from '../services/taskService'
 
     import SubjectHeroCard from '../components/SubjectHeroCard.vue'
     import TaskBoard from '../components/TaskBoard.vue'
@@ -62,24 +62,35 @@
     }
 
     function openEditTaskModal(task) {
-        editingTask.value = { ...task }
+    editingTask.value = { ...task }
     }
 
     async function handleTaskFormSubmit(payload) {
         try {
             if (editingTask.value?.id) {
-                const updated = await updateTask(editingTask.value.id, payload)
-                const index = tasks.value.findIndex(t => t.id === editingTask.value.id)
-                if (index !== -1) tasks.value[index] = updated
+            const updated = await updateTask(editingTask.value.id, payload)
+            const index = tasks.value.findIndex(t => t.id === editingTask.value.id)
+            if (index !== -1) tasks.value[index] = updated
             } else {
-                const created = await createTask(payload)
-                tasks.value.unshift(created)
+            const created = await createTask(payload)
+            tasks.value.unshift(created)
             }
 
             closeModal('createTaskModal')
             editingTask.value = null
         } catch (err) {
             alert('Erro ao salvar a tarefa.')
+        }
+    }
+
+    async function handleDeleteTask(taskId) {
+        try {
+            await deleteTask(taskId)
+            tasks.value = tasks.value.filter(t => t.id !== taskId)
+            closeModal('createTaskModal')
+            editingTask.value = null
+        } catch (err) {
+            alert('Não foi possível excluir a tarefa.')
         }
     }
 
@@ -94,7 +105,7 @@
             const updatedTask = await updateTaskStatus(taskId, status)
             const index = tasks.value.findIndex(t => t.id === taskId)
             if (index !== -1) {
-                tasks.value[index] = updatedTask
+            tasks.value[index] = updatedTask
             }
         } catch (err) {
             targetTask.status = previousStatus
@@ -109,10 +120,10 @@
 
         try {
             const updatedData = {
-                name: subject.value.name,
-                description: subject.value.description,
-                situation: subject.value.situation,
-                color: newColor
+            name: subject.value.name,
+            description: subject.value.description,
+            situation: subject.value.situation,
+            color: newColor
             }
 
             const updatedSubject = await updateSubject(subject.value.id, updatedData)
@@ -160,60 +171,61 @@
     }
 
     onMounted(() => {
-        loadData()
+    loadData()
     })
 </script>
 
 <template>
     <div class="w-100">
         <div v-if="loading" class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Carregando...</span>
-            </div>
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
         </div>
 
         <div v-else-if="error" class="alert alert-danger shadow-sm">
-            {{ error }}
+        {{ error }}
         </div>
 
         <div v-else-if="subject">
-            <SubjectHeroCard 
-                :subject="subject"
-                @back="goBack"
-                @edit="handleOpenEditModal"
-            />
+        <SubjectHeroCard 
+            :subject="subject"
+            @back="goBack"
+            @edit="handleOpenEditModal"
+        />
 
-            <TaskBoard 
-                :tasks="tasks"
-                @create-task="openCreateTaskModal"
-                @edit-task="openEditTaskModal"
-                @update-status="handleUpdateTaskStatus"
-            />
+        <TaskBoard 
+            :tasks="tasks"
+            @create-task="openCreateTaskModal"
+            @edit-task="openEditTaskModal"
+            @update-status="handleUpdateTaskStatus"
+        />
 
-            <TaskFormModal
-                ref="taskFormModalRef"
-                :subject-id="subject.id"
-                :editing-task="editingTask"
-                :initial-status="initialTaskStatus"
-                @submit="handleTaskFormSubmit"
-            />
+        <TaskFormModal
+            ref="taskFormModalRef"
+            :subject-id="subject.id"
+            :editing-task="editingTask"
+            :initial-status="initialTaskStatus"
+            @submit="handleTaskFormSubmit"
+            @delete="handleDeleteTask"
+        />
 
-            <ChangeColorModal
-                :current-color="subject.color"
-                :loading="updatingColor"
-                @save="handleUpdateColor"
-            />
+        <ChangeColorModal
+            :current-color="subject.color"
+            :loading="updatingColor"
+            @save="handleUpdateColor"
+        />
 
-            <SubjectFormModal
-                ref="modalFormRef"
-                :editing-subject="subject"
-                @submit="handleEditSubjectSubmit"
-            />
+        <SubjectFormModal
+            ref="modalFormRef"
+            :editing-subject="subject"
+            @submit="handleEditSubjectSubmit"
+        />
 
-            <ConfirmDeleteModal
-                :subject-name="subject?.name"
-                @confirm="handleDeleteSubject"
-            />
+        <ConfirmDeleteModal
+            :subject-name="subject?.name"
+            @confirm="handleDeleteSubject"
+        />
         </div>
     </div>
 </template>
