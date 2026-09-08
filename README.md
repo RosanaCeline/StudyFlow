@@ -10,6 +10,7 @@ Projetado como **Single Page Application (SPA)**, o sistema utiliza **Vue 3** no
 
 * **Acesso à Aplicação (Front-end):** [study-flow-eta-eight.vercel.app](https://study-flow-eta-eight.vercel.app)
 * **Serviço de API (Back-end):** Publicado na plataforma [Render](https://render.com)
+* **Especificação OpenAPI JSON:** [studyflow-2ntr.onrender.com/swagger-ui/index.html](https://studyflow-2ntr.onrender.com/swagger-ui/index.html#/)
 
 ---
 
