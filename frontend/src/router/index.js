@@ -52,17 +52,17 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
     const token = localStorage.getItem('token')
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
     const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
 
     if (requiresAuth && !token) {
-        next('/login')
-    } else if (requiresGuest && token) {
-        next('/app/dashboard')
-    } else {
-        next()
+        return '/login'
+    } 
+    
+    if (requiresGuest && token) {
+        return '/app/dashboard'
     }
 })
 

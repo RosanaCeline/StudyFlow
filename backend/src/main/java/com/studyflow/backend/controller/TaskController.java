@@ -4,7 +4,6 @@ import com.studyflow.backend.controller.docs.TaskControllerDocs;
 import com.studyflow.backend.data.dto.TaskDTO;
 import com.studyflow.backend.model.Priority;
 import com.studyflow.backend.model.Status;
-import com.studyflow.backend.model.Task;
 import com.studyflow.backend.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 @RequiredArgsConstructor
 public class TaskController implements TaskControllerDocs {
 

@@ -51,9 +51,7 @@ public class SecurityConfig {
                 "/validate-token/**",
                 "/swagger-ui/**",
                 "/v3/api-docs/**",
-                "/swagger-resources/**",
-                "/subjects/**",
-                "/tasks/**"
+                "/swagger-resources/**"
         };
 
         http

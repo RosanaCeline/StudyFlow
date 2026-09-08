@@ -2,7 +2,6 @@ package com.studyflow.backend.controller;
 
 import com.studyflow.backend.controller.docs.SubjectControllerDocs;
 import com.studyflow.backend.data.dto.SubjectDTO;
-import com.studyflow.backend.model.Subject;
 import com.studyflow.backend.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/subjects")
+@RequestMapping("/api/subjects")
 @RequiredArgsConstructor
 public class SubjectController implements SubjectControllerDocs {
 

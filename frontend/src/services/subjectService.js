@@ -1,69 +1,31 @@
-const API_URL = 'http://localhost:8080'
+import api from './api'
 
 export async function listSubjects() {
-    const response = await fetch(`${API_URL}/subjects`)
-
-    if (!response.ok) {
-        throw new Error('Erro ao buscar disciplinas.')
-    }
-
-    return await response.json()
+    const response = await api.get('/api/subjects')
+    return response.data
 }
 
 export async function createSubject(subject) {
-    const response = await fetch(`${API_URL}/subjects`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(subject)
-    })
-
-    if (!response.ok) {
-        throw new Error('Erro ao cadastrar disciplina.')
-    }
-
-    return await response.json()
+    const response = await api.post('/api/subjects', subject)
+    return response.data
 }
 
 export async function getSubjectById(id) {
-    const response = await fetch(`${API_URL}/subjects/${id}`)
-
-    if (!response.ok) {
-        throw new Error('Erro ao buscar disciplina.')
-    }
-
-    return await response.json()
+    const response = await api.get(`/api/subjects/${id}`)
+    return response.data
 }
 
 export async function deleteSubject(id) {
-    const response = await fetch(`${API_URL}/subjects/${id}`, {
-        method: 'DELETE'
-    })
-
-    if (!response.ok) {
-        throw new Error('Erro ao excluir disciplina.')
-    }
+    const response = await api.delete(`/api/subjects/${id}`)
 
     if (response.status === 204) {
         return true
     }
 
-    return await response.json()
+    return response.data
 }
 
 export async function updateSubject(id, subject) {
-    const response = await fetch(`${API_URL}/subjects/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(subject)
-    })
-
-    if (!response.ok) {
-        throw new Error('Erro ao atualizar disciplina.')
-    }
-
-    return await response.json()
+    const response = await api.put(`/api/subjects/${id}`, subject)
+    return response.data
 }

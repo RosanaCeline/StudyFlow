@@ -1,74 +1,49 @@
-const API_URL = 'http://localhost:8080/tasks'
+import api from './api'
 
 export async function listTasks(params = {}) {
-    const query = new URLSearchParams()
-    if (params.subjectId) query.append('subjectId', params.subjectId)
-    if (params.status) query.append('status', params.status)
-    if (params.priority) query.append('priority', params.priority)
+    const response = await api.get('/api/tasks', {
+        params: {
+            subjectId: params.subjectId,
+            status: params.status,
+            priority: params.priority
+        }
+    })
 
-    const url = query.toString() ? `${API_URL}?${query}` : API_URL
-    const response = await fetch(url)
-
-    if (!response.ok) {
-        throw new Error('Erro ao buscar tarefas.')
-    }
-
-    return await response.json()
+    return response.data
 }
 
 export async function createTask(task) {
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(task)
-    })
+    const response = await api.post('/api/tasks', task)
 
-    if (!response.ok) {
-        throw new Error('Erro ao criar tarefa.')
-    }
-
-    return await response.json()
+    return response.data
 }
 
 export async function updateTask(id, task) {
-    const response = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(task)
-    })
+    const response = await api.put(`/api/tasks/${id}`, task)
 
-    if (!response.ok) {
-        throw new Error('Erro ao atualizar tarefa.')
-    }
-
-    return await response.json()
+    return response.data
 }
 
 export async function deleteTask(id) {
-    const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE'
-    })
+    const response = await api.delete(`/api/tasks/${id}`)
 
-    if (!response.ok) {
-        throw new Error('Erro ao excluir tarefa.')
+    if (response.status === 204) {
+        return true
     }
 
-    if (response.status === 204) return true
-    return await response.json()
+    return response.data
 }
 
 export async function updateTaskStatus(id, status) {
-    const response = await fetch(`${API_URL}/${id}/status?status=${status}`, {
-        method: 'PATCH'
-    })
+    const response = await api.patch(
+        `/api/tasks/${id}/status`,
+        null,
+        {
+            params: {
+                status
+            }
+        }
+    )
 
-    if (!response.ok) {
-        throw new Error('Erro ao atualizar o status da tarefa.')
-    }
-
-    return await response.json()
+    return response.data
 }

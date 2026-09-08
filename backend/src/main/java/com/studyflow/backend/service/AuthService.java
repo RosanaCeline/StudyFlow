@@ -40,7 +40,7 @@ public class AuthService {
         userRepository.save(newUser);
 
         String token = tokenService.generateToken(
-                newUser.getUsername(),
+                newUser.getEmail(),
                 newUser.getId(),
                 newUser.getName().split(" ")[0],
                 "login-auth-api",

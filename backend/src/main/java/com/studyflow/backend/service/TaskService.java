@@ -1,16 +1,16 @@
 package com.studyflow.backend.service;
 
 import com.studyflow.backend.data.dto.TaskDTO;
-import com.studyflow.backend.model.Priority;
-import com.studyflow.backend.model.Status;
-import com.studyflow.backend.model.Subject;
-import com.studyflow.backend.model.Task;
+import com.studyflow.backend.exception.UserNotFoundException;
+import com.studyflow.backend.model.*;
 import com.studyflow.backend.repository.SubjectRepository;
 import com.studyflow.backend.repository.TaskRepository;
+import com.studyflow.backend.repository.UserRepository;
 import com.studyflow.backend.service.mapper.TaskMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -25,11 +25,14 @@ public class TaskService {
 
     private final SubjectRepository subjectRepository;
     private final TaskRepository taskRepository;
+    private final UserRepository userRepository;
     private final TaskMapper taskMapper;
 
     public TaskDTO create(TaskDTO dto) {
-        Subject subject = subjectRepository.findById(dto.subjectId())
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+        User user = getAuthenticatedUser();
+
+        Subject subject = subjectRepository.findByIdAndUserId(dto.subjectId(), user.getId())
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada ou acesso negado"));
 
         Task task = new Task();
 
@@ -49,11 +52,13 @@ public class TaskService {
     }
 
     public TaskDTO update(Long id, TaskDTO dto) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+        User user = getAuthenticatedUser();
 
-        Subject subject = subjectRepository.findById(dto.subjectId())
-                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada"));
+        Task task = taskRepository.findByIdAndSubjectUserId(id, user.getId())
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada ou acesso negado"));
+
+        Subject subject = subjectRepository.findByIdAndUserId(dto.subjectId(), user.getId())
+                .orElseThrow(() -> new RuntimeException("Disciplina não encontrada ou acesso negado"));
 
         task.setTitle(dto.title());
         task.setDescription(dto.description());
@@ -78,8 +83,10 @@ public class TaskService {
     }
 
     public void delete(Long id) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository.findByIdAndSubjectUserId(id, user.getId())
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada ou acesso negado"));
 
         taskRepository.delete(task);
 
@@ -87,8 +94,10 @@ public class TaskService {
     }
 
     public TaskDTO toggleStatus(Long id, Status status) {
-        Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+        User user = getAuthenticatedUser();
+
+        Task task = taskRepository.findByIdAndSubjectUserId(id, user.getId())
+                .orElseThrow(() -> new RuntimeException("Tarefa não encontrada ou acesso negado"));
 
         task.setStatus(status);
 
@@ -106,8 +115,13 @@ public class TaskService {
     }
 
     public List<TaskDTO> filter(Long subjectId, Status status, Priority priority) {
+        User user = getAuthenticatedUser();
 
         List<Specification<Task>> specifications = new ArrayList<>();
+
+        specifications.add((root, query, cb) ->
+                cb.equal(root.get("subject").get("user").get("id"), user.getId())
+        );
 
         if (subjectId != null) {
             specifications.add((root, query, cb) ->
@@ -134,5 +148,11 @@ public class TaskService {
         return tasks.stream()
                 .map(taskMapper::toDTO)
                 .toList();
+    }
+
+    private User getAuthenticatedUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException());
     }
 }
