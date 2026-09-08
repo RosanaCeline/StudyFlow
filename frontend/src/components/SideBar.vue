@@ -1,3 +1,14 @@
+<script setup>
+    import { useRouter } from 'vue-router'
+
+    const router = useRouter()
+
+    function handleLogout() {
+        localStorage.clear()
+        router.replace('/login')
+    }
+</script>
+
 <template>
     <aside class="d-flex flex-column vh-100 p-4 border-end sidebar">
 
@@ -24,12 +35,23 @@
             </RouterLink>
         </nav>
 
+        <div class="mt-auto pt-3 border-top">
+            <button 
+                type="button" 
+                class="btn nav-link meu-link btn-logout w-100 text-start d-flex align-items-center p-2"
+                @click="handleLogout"
+            >
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Sair
+            </button>
+        </div>
+
     </aside>
 </template>
 
 <style scoped>
     .sidebar {
-        min-width: 260px; /* Impede que ela encolha no flexbox */
+        min-width: 260px;
     }
     .meu-link {
         color: var(--color-text-light);
@@ -55,5 +77,15 @@
         background-color: var(--color-body);
         color: white !important;
         box-shadow: none;
+    }
+
+    .btn-logout {
+        color: #dc3545 !important;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .btn-logout:hover {
+        background-color: #f8d7da !important;
+        color: #b02a37 !important;
     }
 </style>

@@ -14,15 +14,18 @@ const routes = [
     },
     {
         path: '/login',
-        component: LoginView
+        component: LoginView,
+        meta: { requiresGuest: true }
     },
     {
         path: '/register',
-        component: RegisterView
+        component: RegisterView,
+        meta: { requiresGuest: true }
     },
     {
         path: '/app',
         component: AppLayout,
+        meta: { requiresAuth: true },
         children: [
             {
                 path: 'dashboard',
@@ -37,12 +40,30 @@ const routes = [
                 component: SubjectDetailView
             }
         ]
+    },
+    {
+        path: '/:pathMatch(.*)*',
+        redirect: '/login'
     }
 ]
 
 const router = createRouter({
     history: createWebHistory(),
     routes
+})
+
+router.beforeEach((to, from, next) => {
+    const token = localStorage.getItem('token')
+    const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+    const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
+
+    if (requiresAuth && !token) {
+        next('/login')
+    } else if (requiresGuest && token) {
+        next('/app/dashboard')
+    } else {
+        next()
+    }
 })
 
 export default router

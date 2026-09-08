@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class UserNotFoundException extends UsernameNotFoundException {
 
     public UserNotFoundException () {
-        super("Usuário autenticado não encontrado.");
+        super("Usuário ou senha incorretos");
     }
 
     public UserNotFoundException(String message) {
