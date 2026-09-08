@@ -1,5 +1,5 @@
 <script setup>
-    import { computed } from 'vue'
+    import { computed, ref, onMounted, onUnmounted } from 'vue'
     import {
     Chart as ChartJS,
     ArcElement,
@@ -29,6 +29,20 @@
         type: Array,
         required: true
     }
+    })
+
+    const windowWidth = ref(window.innerWidth)
+
+    function handleResize() {
+    windowWidth.value = window.innerWidth
+    }
+
+    onMounted(() => {
+    window.addEventListener('resize', handleResize)
+    })
+
+    onUnmounted(() => {
+    window.removeEventListener('resize', handleResize)
     })
 
     const completedTasksCount = computed(() => {
@@ -89,6 +103,17 @@
     }
     })
 
+    const isMobile = computed(() => windowWidth.value < 768)
+
+    const subjectChartWidth = computed(() => {
+    if (!isMobile.value) return '100%'
+    
+    const count = props.subjects.length
+    const minRequiredWidth = count * 65
+    
+    return `max(100%, ${minRequiredWidth}px)`
+    })
+
     const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
@@ -143,35 +168,42 @@
 
 <template>
     <div class="row g-4">
-      <div class="col-12 col-md-6 col-xl-4">
+        <div class="col-12 col-md-6 col-xl-4">
         <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-          <h5 class="fw-medium text-dark mb-3 fs-6">Por Status</h5>
-          <div class="chart-wrapper">
+            <h5 class="fw-medium text-dark mb-3 fs-6">Por Status</h5>
+            <div class="chart-wrapper">
             <Bar :data="statusChartData" :options="barOptions" />
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-md-6 col-xl-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-          <h5 class="fw-medium text-dark mb-3 fs-6">Por Prioridade</h5>
-          <div class="chart-wrapper">
-            <Doughnut :data="priorityChartData" :options="chartOptions" />
-          </div>
-        </div>
-      </div>
-
-      <div class="col-12 col-xl-4">
-        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
-          <h5 class="fw-medium text-dark mb-3 fs-6">Total por Disciplina</h5>
-          <div class="chart-wrapper">
-            <Bar v-if="subjects.length > 0" :data="subjectChartData" :options="subjectBarOptions" />
-            <div v-else class="text-center text-muted py-5 small">
-              Nenhuma disciplina cadastrada.
             </div>
-          </div>
         </div>
-      </div>
+        </div>
+
+        <div class="col-12 col-md-6 col-xl-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <h5 class="fw-medium text-dark mb-3 fs-6">Por Prioridade</h5>
+            <div class="chart-wrapper">
+            <Doughnut :data="priorityChartData" :options="chartOptions" />
+            </div>
+        </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+        <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+            <h5 class="fw-medium text-dark mb-3 fs-6">Total por Disciplina</h5>
+            
+            <div v-if="subjects.length > 0" :class="{'chart-scroll-container': isMobile}">
+            <div 
+                :class="isMobile ? 'chart-wrapper-scrollable' : 'chart-wrapper'" 
+                :style="{ width: subjectChartWidth }"
+            >
+                <Bar :data="subjectChartData" :options="subjectBarOptions" />
+            </div>
+            </div>
+
+            <div v-else class="text-center text-muted py-5 small">
+            Nenhuma disciplina cadastrada.
+            </div>
+        </div>
+        </div>
     </div>
 </template>
 
@@ -180,5 +212,31 @@
     position: relative;
     height: 240px;
     width: 100%;
+    }
+
+    .chart-wrapper-scrollable {
+    position: relative;
+    height: 250px;
+    padding-bottom: 24px;
+    }
+
+    .chart-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    margin-top: 8px;
+    }
+
+    .chart-scroll-container::-webkit-scrollbar {
+    height: 6px;
+    }
+
+    .chart-scroll-container::-webkit-scrollbar-thumb {
+    background-color: #ced4da;
+    border-radius: 4px;
+    }
+
+    .chart-scroll-container::-webkit-scrollbar-track {
+    background-color: #f8f9fa;
     }
 </style>

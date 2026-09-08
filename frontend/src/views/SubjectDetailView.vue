@@ -1,6 +1,7 @@
 <script setup>
     import { onMounted, ref, onActivated, watch } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
+    import { Modal } from 'bootstrap'
     import { getSubjectById, updateSubject, deleteSubject } from '../services/subjectService'
     import { listTasks, createTask, updateTask, updateTaskStatus, deleteTask } from '../services/taskService'
 
@@ -58,8 +59,15 @@
 
     function closeModal(modalId) {
         const modalEl = document.getElementById(modalId)
-        const closeBtn = modalEl?.querySelector('.btn-close')
-        if (closeBtn) closeBtn.click()
+        if (!modalEl) return
+
+        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+        
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur()
+        }
+
+        modalInstance.hide()
     }
 
     function goBack() {

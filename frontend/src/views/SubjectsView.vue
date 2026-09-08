@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
+import { Modal } from 'bootstrap'
 import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
 import SubjectCard from '../components/SubjectCard.vue'
 import SubjectFormModal from '../components/SubjectFormModal.vue'
@@ -74,8 +75,15 @@ function openDeleteModal(subject) {
 
 function closeModal(modalId) {
     const modalEl = document.getElementById(modalId)
-    const closeBtn = modalEl?.querySelector('.btn-close')
-    if (closeBtn) closeBtn.click()
+    if (!modalEl) return
+
+    const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+    
+    if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur()
+    }
+
+    modalInstance.hide()
 }
 
 async function handleFormSubmit(payload) {
@@ -133,14 +141,14 @@ onUnmounted(() => {
 
 <template>
     <div class="classroom-container">
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div class="mb-4 pb-2 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
             <div>
                 <h2 class="fw-normal mb-1">Minhas Disciplinas</h2>
                 <p class="text-muted mb-0 small">Gerencie e acesse seus materiais de estudo</p>
             </div>
             <button
                 type="button"
-                class="btn btn-primary px-3 shadow-sm d-flex align-items-center gap-2"
+                class="btn btn-primary rounded-3 d-flex align-items-center gap-1 mt-1 mt-sm-0"
                 data-bs-toggle="modal"
                 data-bs-target="#createSubjectModal"
                 @click="openCreateModal"

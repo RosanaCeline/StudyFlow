@@ -76,14 +76,14 @@
 
 <template>
   <div class="dashboard-container w-100">
-    <div class="mb-4 pb-2 border-bottom d-flex justify-content-between align-items-center">
+    <div class="mb-4 pb-2 border-bottom d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
       <div>
         <h2 class="fw-normal mb-1">Painel Dashboard</h2>
         <p class="text-muted mb-0 small">Visão geral do progresso dos seus estudos e pendências</p>
       </div>
       <button 
         type="button" 
-        class="btn btn-outline-secondary btn-sm rounded-3 d-flex align-items-center gap-1"
+        class="btn btn-outline-secondary btn-sm rounded-3 d-flex align-items-center gap-1 mt-1 mt-sm-0"
         @click="loadDashboardData"
         :disabled="loading"
       >
