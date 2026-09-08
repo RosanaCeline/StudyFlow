@@ -115,7 +115,7 @@ defineExpose({ resetForm })
                     ></button>
                 </div>
 
-                <form @submit.prevent="handleSubmit" novalidate>
+                <form @submit.prevent="handleSubmit" novalidate autocomplete="off">
                     <div class="modal-body py-4">
                         <div class="form-floating mb-3">
                             <input
