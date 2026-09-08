@@ -1,5 +1,5 @@
 <script setup>
-    import { onMounted, ref } from 'vue'
+    import { onMounted, ref, onActivated, watch } from 'vue'
     import { useRoute, useRouter } from 'vue-router'
     import { getSubjectById, updateSubject, deleteSubject } from '../services/subjectService'
     import { listTasks, createTask, updateTask, updateTaskStatus, deleteTask } from '../services/taskService'
@@ -28,18 +28,31 @@
     const taskFormModalRef = ref(null)
     const modalFormRef = ref(null)
 
-    async function loadData() {
-        loading.value = true
+    async function loadData(isSilent = false) {
+        const subjectId = route.params.id
+        
+        if (!isSilent) {
+            loading.value = true
+        }
+
         error.value = ''
 
         try {
-            const subjectId = route.params.id
-            subject.value = await getSubjectById(subjectId)
-            tasks.value = await listTasks({ subjectId })
+            const [fetchedSubject, fetchedTasks] = await Promise.all([
+                getSubjectById(subjectId),
+                listTasks({ subjectId })
+            ])
+
+            subject.value = fetchedSubject
+            tasks.value = fetchedTasks
         } catch (err) {
-            error.value = 'Não foi possível carregar os dados da disciplina.'
+            if (!isSilent) {
+                error.value = 'Não foi possível carregar os dados da disciplina.'
+            }
         } finally {
-            loading.value = false
+            if (!isSilent) {
+                loading.value = false
+            }
         }
     }
 
@@ -171,16 +184,29 @@
     }
 
     onMounted(() => {
-    loadData()
+        loadData(false)
     })
+
+    onActivated(() => {
+        loadData(true)
+    })
+
+    watch(
+        () => route.params.id,
+            (newId, oldId) => {
+                if (newId && newId !== oldId) {
+                    loadData(false)
+                }
+            }
+    )
 </script>
 
 <template>
     <div class="w-100">
         <div v-if="loading" class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Carregando...</span>
-        </div>
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
         </div>
 
         <div v-else-if="error" class="alert alert-danger shadow-sm">

@@ -7,6 +7,20 @@ import DashboardView from '../views/DashboardView.vue'
 import SubjectsView from '@/views/SubjectsView.vue'
 import SubjectDetailView from '@/views/SubjectDetailView.vue'
 
+
+function isTokenExpired(token) {
+    if (!token) return true
+    try {
+        const payloadBase64 = token.split('.')[1]
+        const decodedPayload = JSON.parse(atob(payloadBase64))
+    
+        const currentTime = Math.floor(Date.now() / 1000)
+        return decodedPayload.exp < currentTime
+    } catch (e) {
+        return true
+    }
+}
+
 const routes = [
     {
         path: '/',
@@ -57,11 +71,14 @@ router.beforeEach((to, from) => {
     const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
     const requiresGuest = to.matched.some(record => record.meta.requiresGuest)
 
-    if (requiresAuth && !token) {
+    const tokenExpired = isTokenExpired(token)
+
+    if (requiresAuth && tokenExpired) {
+        localStorage.clear()
         return '/login'
     } 
     
-    if (requiresGuest && token) {
+    if (requiresGuest && !tokenExpired) {
         return '/app/dashboard'
     }
 })

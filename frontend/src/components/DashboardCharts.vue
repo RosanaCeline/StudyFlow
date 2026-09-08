@@ -44,7 +44,7 @@
         labels: ['A Fazer', 'Em Andamento', 'Concluído'],
         datasets: [{
         label: 'Quantidade de Tarefas',
-        backgroundColor: ['#6c757d', '#0d6efd', '#198754'],
+        backgroundColor: ['#A9ECEF', '#FFE380', '#B6EBB9'],
         data: [pending, inProgress, completed]
         }]
     }

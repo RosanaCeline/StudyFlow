@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
 import SubjectCard from '../components/SubjectCard.vue'
@@ -35,16 +35,22 @@ function closeAllMenus() {
     activeMenuSubjectId.value = null
 }
 
-async function loadSubjects() {
-    loading.value = true
+async function loadSubjects(isSilent = false) {
+    if (!isSilent) {
+        loading.value = true
+    }
     error.value = ''
 
     try {
         subjects.value = await listSubjects()
     } catch (err) {
-        error.value = 'Não foi possível carregar as disciplinas.'
+        if (!isSilent) {
+            error.value = 'Não foi possível carregar as disciplinas.'
+        }
     } finally {
-        loading.value = false
+        if (!isSilent) {
+            loading.value = false
+        }
     }
 }
 
@@ -112,8 +118,12 @@ function handleDocumentClick(event) {
 }
 
 onMounted(() => {
-    loadSubjects()
+    loadSubjects(false)
     document.addEventListener('click', handleDocumentClick)
+})
+
+onActivated(() => {
+    loadSubjects(true)
 })
 
 onUnmounted(() => {
