@@ -4,6 +4,7 @@
     import { getSubjectById, updateSubject, deleteSubject } from '../services/subjectService'
     import { listTasks, createTask, updateTask, updateTaskStatus, deleteTask } from '../services/taskService'
     import TaskBoard from '../components/TaskBoard.vue'
+    import { Modal } from 'bootstrap'
 
     const route = useRoute()
     const router = useRouter()
@@ -77,6 +78,7 @@
         const initialStatus = status === 'COMPLETED' ? 'COMPLETED' 
                         : status === 'IN_PROGRESS' ? 'IN_PROGRESS' 
                         : 'PENDING'
+
         taskForm.value = {
             title: '',
             description: '',
@@ -84,6 +86,12 @@
             priority: 'MEDIUM',
             status: initialStatus,
             subjectId: subject.value.id
+        }
+
+        const modalEl = document.getElementById('createTaskModal')
+        if (modalEl) {
+            const modalInstance = Modal.getOrCreateInstance(modalEl)
+            modalInstance.show()
         }
     }
 
@@ -121,9 +129,13 @@
             }
 
             const created = await createTask(payload)
-            tasks.value.push(created)
+            tasks.value = [...tasks.value, created]
 
-            document.getElementById('createTaskModal').querySelector('.btn-close').click()
+            const modalEl = document.getElementById('createTaskModal')
+            if (modalEl) {
+                const modalInstance = Modal.getInstance(modalEl)
+                if (modalInstance) modalInstance.hide()
+            }
         } catch (err) {
             alert('Erro ao cadastrar a tarefa.')
         }
@@ -137,10 +149,12 @@
         targetTask.status = status
 
         try {
-            await updateTask(taskId, {
-                ...targetTask,
-                subjectId: subject.value.id
-            })
+            const updatedTask = await updateTaskStatus(taskId, status)
+        
+            const index = tasks.value.findIndex(t => t.id === taskId)
+            if (index !== -1) {
+                tasks.value[index] = updatedTask
+            }
         } catch (err) {
             targetTask.status = previousStatus
             alert('Não foi possível alterar a situação da tarefa.')
@@ -406,7 +420,7 @@
             </div>
 
             <TaskBoard 
-                :tasks="subject.task || []" 
+                :tasks="tasks"
                 @create-task="openCreateTaskModal"
                 @update-status="handleUpdateTaskStatus"
             />

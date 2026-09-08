@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
 import SubjectCard from '../components/SubjectCard.vue'
@@ -16,6 +16,25 @@ const editingSubject = ref(null)
 const subjectToDelete = ref(null)
 const modalFormRef = ref(null)
 
+const activeMenuSubjectId = ref(null)
+
+function navigateToSubject(id) {
+    closeAllMenus()
+    router.push(`/app/subjects/${id}`)
+}
+
+function toggleSubjectMenu(subjectId) {
+    if (activeMenuSubjectId.value === subjectId) {
+        activeMenuSubjectId.value = null
+    } else {
+        activeMenuSubjectId.value = subjectId
+    }
+}
+
+function closeAllMenus() {
+    activeMenuSubjectId.value = null
+}
+
 async function loadSubjects() {
     loading.value = true
     error.value = ''
@@ -30,6 +49,7 @@ async function loadSubjects() {
 }
 
 function openCreateModal() {
+    closeAllMenus()
     editingSubject.value = null
     if (modalFormRef.value) {
         modalFormRef.value.resetForm()
@@ -37,10 +57,12 @@ function openCreateModal() {
 }
 
 function openEditModal(subject) {
+    closeAllMenus()
     editingSubject.value = { ...subject }
 }
 
 function openDeleteModal(subject) {
+    closeAllMenus()
     subjectToDelete.value = subject
 }
 
@@ -83,12 +105,19 @@ async function handleDelete() {
     }
 }
 
-function navigateToSubject(id) {
-    router.push(`/app/subjects/${id}`)
+function handleDocumentClick(event) {
+    if (!event.target.closest('.dropdown')) {
+        closeAllMenus()
+    }
 }
 
 onMounted(() => {
     loadSubjects()
+    document.addEventListener('click', handleDocumentClick)
+})
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleDocumentClick)
 })
 </script>
 
@@ -146,7 +175,9 @@ onMounted(() => {
             >
                 <SubjectCard
                     :subject="subject"
+                    :is-menu-open="activeMenuSubjectId === subject.id"
                     @click="navigateToSubject"
+                    @toggle-menu="toggleSubjectMenu"
                     @edit="openEditModal"
                     @delete="openDeleteModal"
                 />
@@ -167,7 +198,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.btn-primary {
-    background-color: var(--color-body) !important;
-}
+    .btn-primary {
+        background-color: var(--color-body) !important;
+    }
 </style>
