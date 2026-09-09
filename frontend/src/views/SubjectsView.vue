@@ -1,164 +1,176 @@
 <script setup>
-import { onMounted, onUnmounted, ref, onActivated } from 'vue'
-import { useRouter } from 'vue-router'
-import { Modal } from 'bootstrap'
-import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
-import SubjectCard from '../components/SubjectCard.vue'
-import SubjectFormModal from '../components/SubjectFormModal.vue'
-import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
+    import { onMounted, onUnmounted, ref, onActivated } from 'vue'
+    import { useRouter } from 'vue-router'
+    import { Modal } from 'bootstrap'
+    import { listSubjects, createSubject, updateSubject, deleteSubject } from '../services/subjectService'
+    import SubjectCard from '../components/SubjectCard.vue'
+    import SubjectFormModal from '../components/SubjectFormModal.vue'
+    import ConfirmDeleteModal from '../components/ConfirmDeleteModal.vue'
 
-const router = useRouter()
+    const router = useRouter()
 
-const subjects = ref([])
-const loading = ref(false)
-const error = ref('')
+    const subjects = ref([])
+    const loading = ref(false)
+    const error = ref('')
 
-const editingSubject = ref(null)
-const subjectToDelete = ref(null)
-const modalFormRef = ref(null)
+    const editingSubject = ref(null)
+    const subjectToDelete = ref(null)
+    const modalFormRef = ref(null)
 
-const activeMenuSubjectId = ref(null)
+    const activeMenuSubjectId = ref(null)
 
-function navigateToSubject(id) {
-    closeAllMenus()
-    router.push(`/app/subjects/${id}`)
-}
+    const isSaving = ref(false)
+    const isDeleting = ref(false)
 
-function toggleSubjectMenu(subjectId) {
-    if (activeMenuSubjectId.value === subjectId) {
-        activeMenuSubjectId.value = null
-    } else {
-        activeMenuSubjectId.value = subjectId
-    }
-}
-
-function closeAllMenus() {
-    activeMenuSubjectId.value = null
-}
-
-async function loadSubjects(isSilent = false) {
-    if (!isSilent) {
-        loading.value = true
-    }
-    error.value = ''
-
-    try {
-        subjects.value = await listSubjects()
-    } catch (err) {
-        if (!isSilent) {
-            error.value = 'Não foi possível carregar as disciplinas.'
-        }
-    } finally {
-        if (!isSilent) {
-            loading.value = false
-        }
-    }
-}
-
-function openCreateModal() {
-    closeAllMenus()
-    editingSubject.value = null
-    if (modalFormRef.value) {
-        modalFormRef.value.resetForm()
-    }
-
-    const modalEl = document.getElementById('createSubjectModal')
-    if (modalEl) {
-        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
-        modalInstance.show()
-    }
-}
-
-function openEditModal(subject) {
-    closeAllMenus()
-    editingSubject.value = { ...subject }
-
-    const modalEl = document.getElementById('createSubjectModal')
-    if (modalEl) {
-        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
-        modalInstance.show()
-    }
-}
-
-function openDeleteModal(subject) {
-    closeAllMenus()
-    subjectToDelete.value = subject
-
-    const modalEl = document.getElementById('deleteSubjectModal')
-    if (modalEl) {
-        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
-        modalInstance.show()
-    }
-}
-
-function closeModal(modalId) {
-    const modalEl = document.getElementById(modalId)
-    if (!modalEl) return
-
-    if (document.activeElement instanceof HTMLElement) {
-        document.activeElement.blur()
-    }
-
-    const modalInstance = Modal.getInstance(modalEl)
-    if (modalInstance) {
-        modalInstance.hide()
-    } else {
-        const newModal = new Modal(modalEl)
-        newModal.hide()
-    }
-}
-
-async function handleFormSubmit(payload) {
-    try {
-        if (editingSubject.value?.id) {
-            const updated = await updateSubject(editingSubject.value.id, payload)
-            const index = subjects.value.findIndex(s => s.id === editingSubject.value.id)
-            if (index !== -1) subjects.value[index] = updated
-        } else {
-            const created = await createSubject(payload)
-            subjects.value.unshift(created)
-        }
-
-        closeModal('createSubjectModal')
-        editingSubject.value = null
-    } catch (err) {
-        error.value = editingSubject.value?.id
-            ? 'Não foi possível atualizar a disciplina.' 
-            : 'Não foi possível cadastrar a disciplina.'
-    }
-}
-
-async function handleDelete() {
-    if (!subjectToDelete.value) return
-
-    try {
-        await deleteSubject(subjectToDelete.value.id)
-        subjects.value = subjects.value.filter(s => s.id !== subjectToDelete.value.id)
-        subjectToDelete.value = null
-        closeModal('deleteSubjectModal')
-    } catch (err) {
-        error.value = 'Não foi possível excluir a disciplina.'
-    }
-}
-
-function handleDocumentClick(event) {
-    if (!event.target.closest('.dropdown')) {
+    function navigateToSubject(id) {
         closeAllMenus()
+        router.push(`/app/subjects/${id}`)
     }
-}
 
-onMounted(() => {
-    loadSubjects(false)
-    document.addEventListener('click', handleDocumentClick)
-})
+    function toggleSubjectMenu(subjectId) {
+        if (activeMenuSubjectId.value === subjectId) {
+            activeMenuSubjectId.value = null
+        } else {
+            activeMenuSubjectId.value = subjectId
+        }
+    }
 
-onActivated(() => {
-    loadSubjects(true)
-})
+    function closeAllMenus() {
+        activeMenuSubjectId.value = null
+    }
 
-onUnmounted(() => {
-    document.removeEventListener('click', handleDocumentClick)
-})
+    async function loadSubjects(isSilent = false) {
+        if (!isSilent) {
+            loading.value = true
+        }
+        error.value = ''
+
+        try {
+            subjects.value = await listSubjects()
+        } catch (err) {
+            if (!isSilent) {
+                error.value = 'Não foi possível carregar as disciplinas.'
+            }
+        } finally {
+            if (!isSilent) {
+                loading.value = false
+            }
+        }
+    }
+
+    function openCreateModal() {
+        closeAllMenus()
+        editingSubject.value = null
+        if (modalFormRef.value) {
+            modalFormRef.value.resetForm()
+        }
+
+        const modalEl = document.getElementById('createSubjectModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
+    }
+
+    function openEditModal(subject) {
+        closeAllMenus()
+        editingSubject.value = { ...subject }
+
+        const modalEl = document.getElementById('createSubjectModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
+    }
+
+    function openDeleteModal(subject) {
+        closeAllMenus()
+        subjectToDelete.value = subject
+
+        const modalEl = document.getElementById('deleteSubjectModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
+    }
+
+    function closeModal(modalId) {
+        const modalEl = document.getElementById(modalId)
+        if (!modalEl) return
+
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur()
+        }
+
+        const modalInstance = Modal.getInstance(modalEl)
+        if (modalInstance) {
+            modalInstance.hide()
+        } else {
+            const newModal = new Modal(modalEl)
+            newModal.hide()
+        }
+    }
+
+    async function handleFormSubmit(payload) {
+        if (isSaving.value) return
+        isSaving.value = true
+
+        try {
+            if (editingSubject.value?.id) {
+                const updated = await updateSubject(editingSubject.value.id, payload)
+                const index = subjects.value.findIndex(s => s.id === editingSubject.value.id)
+                if (index !== -1) subjects.value[index] = updated
+            } else {
+                const created = await createSubject(payload)
+                subjects.value.unshift(created)
+            }
+
+            closeModal('createSubjectModal')
+            editingSubject.value = null
+        } catch (err) {
+            error.value = editingSubject.value?.id
+                ? 'Não foi possível atualizar a disciplina.' 
+                : 'Não foi possível cadastrar a disciplina.'
+        } finally {
+            isSaving.value = false
+        }
+    }
+
+    async function handleDelete() {
+        if (!subjectToDelete.value || isDeleting.value) return
+
+        isDeleting.value = true
+
+        try {
+            await deleteSubject(subjectToDelete.value.id) 
+            subjects.value = subjects.value.filter(s => s.id !== subjectToDelete.value.id)
+            subjectToDelete.value = null
+            closeModal('deleteSubjectModal')
+        } catch (err) {
+            error.value = 'Não foi possível excluir a disciplina.'
+        } finally {
+            isDeleting.value = false
+        }
+    }
+
+    function handleDocumentClick(event) {
+        if (!event.target.closest('.dropdown')) {
+            closeAllMenus()
+        }
+    }
+
+    onMounted(() => {
+        loadSubjects(false)
+        document.addEventListener('click', handleDocumentClick)
+    })
+
+    onActivated(() => {
+        loadSubjects(true)
+    })
+
+    onUnmounted(() => {
+        document.removeEventListener('click', handleDocumentClick)
+    })
 </script>
 
 <template>
@@ -223,11 +235,13 @@ onUnmounted(() => {
         <SubjectFormModal
             ref="modalFormRef"
             :editing-subject="editingSubject"
+            :loading="isSaving"
             @submit="handleFormSubmit"
         />
 
         <ConfirmDeleteModal
             :subject-name="subjectToDelete?.name"
+            :loading="isDeleting"
             @confirm="handleDelete"
         />
     </div>

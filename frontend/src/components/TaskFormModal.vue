@@ -13,6 +13,14 @@
         initialStatus: {
             type: String,
             default: 'PENDING'
+        },
+        loading: {
+            type: Boolean,
+            default: false
+        },
+        deleting: {
+            type: Boolean,
+            default: false
         }
     })
 
@@ -84,6 +92,7 @@
     }
 
     function handleSubmit() {
+        if (props.loading || props.deleting) return
         if (!validate()) return
 
         const payload = {
@@ -96,6 +105,11 @@
         emit('submit', payload)
     }
 
+    function handleDelete() {
+        if (props.loading || props.deleting || !props.editingTask?.id) return
+        emit('delete', props.editingTask.id)
+    }
+
     defineExpose({ resetForm })
 </script>
 
@@ -106,6 +120,8 @@
     tabindex="-1"
     aria-labelledby="createTaskModalLabel"
     aria-hidden="true"
+    :data-bs-backdrop="(loading || deleting) ? 'static' : true"
+    :data-bs-keyboard="!(loading || deleting)"
   >
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg rounded-4">
@@ -113,7 +129,13 @@
           <h5 id="createTaskModalLabel" class="modal-title fw-normal fs-4">
             {{ editingTask ? 'Editar Tarefa' : 'Nova Tarefa' }}
           </h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          <button 
+            type="button" 
+            class="btn-close" 
+            data-bs-dismiss="modal" 
+            aria-label="Fechar"
+            :disabled="loading || deleting"
+          ></button>
         </div>
 
         <form @submit.prevent="handleSubmit" novalidate autocomplete="off">
@@ -127,6 +149,7 @@
                 v-model="taskForm.title"
                 placeholder="Título da tarefa"
                 maxlength="60"
+                :disabled="loading || deleting"
               >
               <label for="taskTitle">Título da tarefa (obrigatório)</label>
               <div class="invalid-feedback" v-if="taskErrors.title">
@@ -143,6 +166,7 @@
                 placeholder="Descrição"
                 maxlength="100"
                 style="height: 100px; resize: none;"
+                :disabled="loading || deleting"
               ></textarea>
               <label for="taskDesc">Descrição</label>
               <div class="invalid-feedback" v-if="taskErrors.description">
@@ -157,12 +181,17 @@
                 class="form-control rounded-3"
                 id="taskDeadline"
                 v-model="taskForm.deadline"
+                :disabled="loading || deleting"
               >
             </div>
 
             <div>
               <label class="form-label small text-muted mb-1">Prioridade</label>
-              <select class="form-select rounded-3" v-model="taskForm.priority">
+              <select 
+                class="form-select rounded-3" 
+                v-model="taskForm.priority"
+                :disabled="loading || deleting"
+              >
                 <option value="LOW">Baixa</option>
                 <option value="MEDIUM">Média</option>
                 <option value="HIGH">Alta</option>
@@ -172,28 +201,32 @@
 
           <div class="modal-footer border-0 pt-0 d-flex justify-content-between align-items-center">
             <button
-                v-if="editingTask"
-                type="button"
-                class="btn btn-delete-icon rounded-circle d-flex align-items-center justify-content-center"
-                @click="emit('delete', editingTask.id)"
-                title="Excluir tarefa"
-                aria-label="Excluir tarefa"
+              v-if="editingTask"
+              type="button"
+              class="btn btn-delete-icon rounded-circle d-flex align-items-center justify-content-center"
+              @click="handleDelete"
+              title="Excluir tarefa"
+              aria-label="Excluir tarefa"
+              :disabled="loading || deleting"
             >
-                <i class="bi bi-trash fs-5"></i>
+              <span v-if="deleting" class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true"></span>
+              <i v-else class="bi bi-trash fs-5"></i>
             </button>
 
             <div class="d-flex gap-2 ms-auto">
-                <button
-                    type="button"
-                    class="btn btn-link text-decoration-none text-secondary"
-                    data-bs-dismiss="modal"
-                >
-                    Cancelar
-                </button>
+              <button
+                type="button"
+                class="btn btn-link text-decoration-none text-secondary"
+                data-bs-dismiss="modal"
+                :disabled="loading || deleting"
+              >
+                Cancelar
+              </button>
 
-                <button type="submit" class="btn btn-primary px-4">
-                    {{ editingTask ? 'Salvar' : 'Criar' }}
-                </button>
+              <button type="submit" class="btn btn-primary px-4 rounded-3" :disabled="loading || deleting">
+                <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                {{ loading ? (editingTask ? 'Salvando...' : 'Criando...') : (editingTask ? 'Salvar' : 'Criar') }}
+              </button>
             </div>
           </div>
         </form>
@@ -216,12 +249,17 @@
         transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease;
     }
 
-    .btn-delete-icon:hover {
+    .btn-delete-icon:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-delete-icon:not(:disabled):hover {
         background-color: #f8d7da;
         color: #b02a37;
     }
 
-    .btn-delete-icon:active {
+    .btn-delete-icon:not(:disabled):active {
         transform: scale(0.95);
     }
 

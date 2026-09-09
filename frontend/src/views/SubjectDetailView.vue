@@ -22,6 +22,9 @@
 
     const updatingColor = ref(false)
     const updatingSubject = ref(false)
+    const deletingSubject = ref(false)
+    const savingTask = ref(false)
+    const deletingTask = ref(false)
 
     const editingTask = ref(null)
     const initialTaskStatus = ref('PENDING')
@@ -128,6 +131,9 @@
     }
 
     async function handleTaskFormSubmit(payload) {
+        if (savingTask.value) return
+        savingTask.value = true
+
         try {
             if (editingTask.value?.id) {
                 const updated = await updateTask(editingTask.value.id, payload)
@@ -142,10 +148,15 @@
             editingTask.value = null
         } catch (err) {
             alert('Erro ao salvar a tarefa.')
+        } finally {
+            savingTask.value = false
         }
     }
 
     async function handleDeleteTask(taskId) {
+        if (deletingTask.value) return
+        deletingTask.value = true
+
         try {
             await deleteTask(taskId)
             tasks.value = tasks.value.filter(t => t.id !== taskId)
@@ -153,6 +164,8 @@
             editingTask.value = null
         } catch (err) {
             alert('Não foi possível excluir a tarefa.')
+        } finally {
+            deletingTask.value = false
         }
     }
 
@@ -215,7 +228,9 @@
     }
 
     async function handleDeleteSubject() {
-        if (!subject.value) return
+        if (!subject.value || deletingSubject.value) return
+
+        deletingSubject.value = true
 
         try {
             await deleteSubject(subject.value.id)
@@ -223,6 +238,8 @@
             router.push('/app/subjects')
         } catch (err) {
             alert('Não foi possível excluir a disciplina.')
+        } finally {
+            deletingSubject.value = false
         }
     }
 
@@ -277,6 +294,8 @@
                 :subject-id="subject.id"
                 :editing-task="editingTask"
                 :initial-status="initialTaskStatus"
+                :loading="savingTask"
+                :deleting="deletingTask"
                 @submit="handleTaskFormSubmit"
                 @delete="handleDeleteTask"
             />
@@ -290,11 +309,13 @@
             <SubjectFormModal
                 ref="modalFormRef"
                 :editing-subject="subject"
+                :loading="updatingSubject"
                 @submit="handleEditSubjectSubmit"
             />
 
             <ConfirmDeleteModal
                 :subject-name="subject?.name"
+                :loading="deletingSubject"
                 @confirm="handleDeleteSubject"
             />
         </div>
