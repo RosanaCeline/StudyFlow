@@ -60,18 +60,47 @@
     function closeModal(modalId) {
         const modalEl = document.getElementById(modalId)
         if (!modalEl) return
-
-        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
         
         if (document.activeElement instanceof HTMLElement) {
             document.activeElement.blur()
         }
 
-        modalInstance.hide()
+        const modalInstance = Modal.getInstance(modalEl)
+        if (modalInstance) {
+            modalInstance.hide()
+        }
     }
 
-    function goBack() {
+    function goToSubjectList() {
         router.push('/app/subjects')
+    }
+
+    function openColorModal() {
+        const modalEl = document.getElementById('changeColorModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
+    }
+
+    function openEditModal() {
+        if (modalFormRef.value) {
+            modalFormRef.value.resetForm()
+        }
+        
+        const modalEl = document.getElementById('createSubjectModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
+    }
+
+    function openDeleteModal() {
+        const modalEl = document.getElementById('deleteSubjectModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
     }
 
     function openCreateTaskModal(status = 'PENDING') {
@@ -80,21 +109,33 @@
         if (taskFormModalRef.value) {
             taskFormModalRef.value.resetForm()
         }
+
+        const modalEl = document.getElementById('createTaskModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
     }
 
     function openEditTaskModal(task) {
-    editingTask.value = { ...task }
+        editingTask.value = { ...task }
+
+        const modalEl = document.getElementById('createTaskModal')
+        if (modalEl) {
+            const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+            modalInstance.show()
+        }
     }
 
     async function handleTaskFormSubmit(payload) {
         try {
             if (editingTask.value?.id) {
-            const updated = await updateTask(editingTask.value.id, payload)
-            const index = tasks.value.findIndex(t => t.id === editingTask.value.id)
-            if (index !== -1) tasks.value[index] = updated
+                const updated = await updateTask(editingTask.value.id, payload)
+                const index = tasks.value.findIndex(t => t.id === editingTask.value.id)
+                if (index !== -1) tasks.value[index] = updated
             } else {
-            const created = await createTask(payload)
-            tasks.value.unshift(created)
+                const created = await createTask(payload)
+                tasks.value.unshift(created)
             }
 
             closeModal('createTaskModal')
@@ -126,7 +167,7 @@
             const updatedTask = await updateTaskStatus(taskId, status)
             const index = tasks.value.findIndex(t => t.id === taskId)
             if (index !== -1) {
-            tasks.value[index] = updatedTask
+                tasks.value[index] = updatedTask
             }
         } catch (err) {
             targetTask.status = previousStatus
@@ -141,10 +182,10 @@
 
         try {
             const updatedData = {
-            name: subject.value.name,
-            description: subject.value.description,
-            situation: subject.value.situation,
-            color: newColor
+                name: subject.value.name,
+                description: subject.value.description,
+                situation: subject.value.situation,
+                color: newColor
             }
 
             const updatedSubject = await updateSubject(subject.value.id, updatedData)
@@ -154,12 +195,6 @@
             alert('Não foi possível alterar a cor da disciplina.')
         } finally {
             updatingColor.value = false
-        }
-    }
-
-    function handleOpenEditModal() {
-        if (modalFormRef.value) {
-            modalFormRef.value.resetForm()
         }
     }
 
@@ -201,11 +236,11 @@
 
     watch(
         () => route.params.id,
-            (newId, oldId) => {
-                if (newId && newId !== oldId) {
-                    loadData(false)
-                }
+        (newId, oldId) => {
+            if (newId && newId !== oldId) {
+                loadData(false)
             }
+        }
     )
 </script>
 
@@ -218,48 +253,50 @@
         </div>
 
         <div v-else-if="error" class="alert alert-danger shadow-sm">
-        {{ error }}
+            {{ error }}
         </div>
 
         <div v-else-if="subject">
-        <SubjectHeroCard 
-            :subject="subject"
-            @back="goBack"
-            @edit="handleOpenEditModal"
-        />
+            <SubjectHeroCard
+                :subject="subject"
+                @back="goToSubjectList"
+                @open-color-picker="openColorModal"
+                @edit="openEditModal"
+                @delete="openDeleteModal"
+            />
 
-        <TaskBoard 
-            :tasks="tasks"
-            @create-task="openCreateTaskModal"
-            @edit-task="openEditTaskModal"
-            @update-status="handleUpdateTaskStatus"
-        />
+            <TaskBoard 
+                :tasks="tasks"
+                @create-task="openCreateTaskModal"
+                @edit-task="openEditTaskModal"
+                @update-status="handleUpdateTaskStatus"
+            />
 
-        <TaskFormModal
-            ref="taskFormModalRef"
-            :subject-id="subject.id"
-            :editing-task="editingTask"
-            :initial-status="initialTaskStatus"
-            @submit="handleTaskFormSubmit"
-            @delete="handleDeleteTask"
-        />
+            <TaskFormModal
+                ref="taskFormModalRef"
+                :subject-id="subject.id"
+                :editing-task="editingTask"
+                :initial-status="initialTaskStatus"
+                @submit="handleTaskFormSubmit"
+                @delete="handleDeleteTask"
+            />
 
-        <ChangeColorModal
-            :current-color="subject.color"
-            :loading="updatingColor"
-            @save="handleUpdateColor"
-        />
+            <ChangeColorModal
+                :current-color="subject.color"
+                :loading="updatingColor"
+                @save="handleUpdateColor"
+            />
 
-        <SubjectFormModal
-            ref="modalFormRef"
-            :editing-subject="subject"
-            @submit="handleEditSubjectSubmit"
-        />
+            <SubjectFormModal
+                ref="modalFormRef"
+                :editing-subject="subject"
+                @submit="handleEditSubjectSubmit"
+            />
 
-        <ConfirmDeleteModal
-            :subject-name="subject?.name"
-            @confirm="handleDeleteSubject"
-        />
+            <ConfirmDeleteModal
+                :subject-name="subject?.name"
+                @confirm="handleDeleteSubject"
+            />
         </div>
     </div>
 </template>

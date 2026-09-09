@@ -74,8 +74,6 @@
                             <button 
                                 type="button"
                                 class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#createSubjectModal"
                                 @click="emit('edit', subject)"
                             >
                                 <i class="bi bi-pencil text-secondary"></i>
@@ -86,8 +84,6 @@
                             <button 
                                 type="button"
                                 class="dropdown-item text-danger d-flex align-items-center gap-2 py-2"
-                                data-bs-toggle="modal"
-                                data-bs-target="#deleteSubjectModal"
                                 @click="emit('delete', subject)"
                             >
                                 <i class="bi bi-trash"></i>

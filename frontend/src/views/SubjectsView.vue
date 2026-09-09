@@ -61,29 +61,51 @@ function openCreateModal() {
     if (modalFormRef.value) {
         modalFormRef.value.resetForm()
     }
+
+    const modalEl = document.getElementById('createSubjectModal')
+    if (modalEl) {
+        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+        modalInstance.show()
+    }
 }
 
 function openEditModal(subject) {
     closeAllMenus()
     editingSubject.value = { ...subject }
+
+    const modalEl = document.getElementById('createSubjectModal')
+    if (modalEl) {
+        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+        modalInstance.show()
+    }
 }
 
 function openDeleteModal(subject) {
     closeAllMenus()
     subjectToDelete.value = subject
+
+    const modalEl = document.getElementById('deleteSubjectModal')
+    if (modalEl) {
+        const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
+        modalInstance.show()
+    }
 }
 
 function closeModal(modalId) {
     const modalEl = document.getElementById(modalId)
     if (!modalEl) return
 
-    const modalInstance = Modal.getInstance(modalEl) || new Modal(modalEl)
-    
     if (document.activeElement instanceof HTMLElement) {
         document.activeElement.blur()
     }
 
-    modalInstance.hide()
+    const modalInstance = Modal.getInstance(modalEl)
+    if (modalInstance) {
+        modalInstance.hide()
+    } else {
+        const newModal = new Modal(modalEl)
+        newModal.hide()
+    }
 }
 
 async function handleFormSubmit(payload) {
@@ -149,8 +171,6 @@ onUnmounted(() => {
             <button
                 type="button"
                 class="btn btn-primary rounded-3 d-flex align-items-center gap-1 mt-1 mt-sm-0"
-                data-bs-toggle="modal"
-                data-bs-target="#createSubjectModal"
                 @click="openCreateModal"
             >
                 <i class="bi bi-plus-lg fs-5"></i>
@@ -177,8 +197,6 @@ onUnmounted(() => {
             <button
                 type="button"
                 class="btn btn-outline-primary px-4 mt-2"
-                data-bs-toggle="modal"
-                data-bs-target="#createSubjectModal"
                 @click="openCreateModal"
             >
                 Criar disciplina

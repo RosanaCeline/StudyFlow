@@ -20,7 +20,7 @@
     function handleAction(action, event) {
         event.stopPropagation()
         isMenuOpen.value = false
-        emit(action)
+        emit(action, props.subject)
     }
 
     function handleDocumentClick(event) {
@@ -95,8 +95,6 @@
                         type="button" 
                         class="btn-palette btn btn-sm btn-light text-dark rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm"
                         title="Alterar cor do tema"
-                        data-bs-toggle="modal"
-                        data-bs-target="#changeColorModal"
                         @click="emit('open-color-picker')"
                     >
                         <i class="bi bi-palette fs-5"></i>
@@ -126,8 +124,6 @@
                                 <button 
                                     type="button"
                                     class="dropdown-item d-flex align-items-center gap-2 py-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#createSubjectModal"
                                     @click="handleAction('edit', $event)"
                                 >
                                     <i class="bi bi-pencil text-secondary"></i>
@@ -138,8 +134,6 @@
                                 <button 
                                     type="button"
                                     class="dropdown-item text-danger d-flex align-items-center gap-2 py-2"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#deleteSubjectModal"
                                     @click="handleAction('delete', $event)"
                                 >
                                     <i class="bi bi-trash"></i>

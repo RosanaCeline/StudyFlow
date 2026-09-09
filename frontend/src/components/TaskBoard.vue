@@ -80,8 +80,6 @@
             <template #item="{ element: task }">
               <div 
                 class="card task-card border-0 shadow-sm rounded-3 bg-white p-3 cursor-grab"
-                data-bs-toggle="modal"
-                data-bs-target="#createTaskModal"
                 @click="emit('edit-task', task)"
               >
                 <h6 
@@ -121,8 +119,6 @@
           <button 
             type="button" 
             class="btn btn-add-card w-100 mt-2 py-2 px-3 text-start text-secondary rounded-3 d-flex align-items-center gap-2 small"
-            data-bs-toggle="modal"
-            data-bs-target="#createTaskModal"
             @click="emit('create-task', col.key)"
           >
             <i class="bi bi-plus-lg"></i>
