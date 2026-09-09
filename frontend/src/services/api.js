@@ -27,7 +27,11 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         const status = error.response ? error.response.status : null
-        if (status === 401 || status === 403) {
+        const url = error.config ? error.config.url : ''
+
+        const isAuthRequest = url.includes('/register') || url.includes('/login') || url.includes('/auth')
+
+        if ((status === 401 || status === 403) && !isAuthRequest) {
             localStorage.removeItem('token')
 
             if (router.currentRoute.value.path !== '/login') {

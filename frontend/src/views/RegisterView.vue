@@ -54,44 +54,57 @@
     }
 
     async function handleSubmit() {
-    if (!validate()) return
+        if (!validate()) return
 
-    loading.value = true
-    apiError.value = ''
+        loading.value = true
+        apiError.value = ''
 
-    try {
-        const payload = {
-        name: name.value.trim(),
-        email: email.value.trim(),
-        password: password.value
+        try {
+            const payload = {
+                name: name.value.trim(),
+                email: email.value.trim(),
+                password: password.value
+            }
+
+            const response = await registerUser(payload)
+
+            if (response?.error || response?.status === 'error') {
+                apiError.value = response.message || 'Este e-mail já está cadastrado.'
+                errors.value.email = 'E-mail já em uso.'
+                return
+            }
+
+            if (response?.token) {
+                localStorage.setItem('token', response.token)
+            }
+
+            // Apenas redireciona se a requisição passou sem erros
+            await router.push('/app/dashboard')
+        } catch (err) {
+            // Captura de erros HTTP (status 400, 403, 409, 500, etc.)
+            if (err.response) {
+                const status = err.response.status
+                const data = err.response.data || {}
+
+                if (
+                    status === 400 || 
+                    status === 403 || 
+                    status === 409 || 
+                    (data.message && data.message.toLowerCase().includes('e-mail'))
+                ) {
+                    apiError.value = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.'
+                    errors.value.email = 'E-mail já em uso.'
+                } else if (data.message) {
+                    apiError.value = data.message
+                } else {
+                    apiError.value = 'Erro ao realizar o cadastro. Verifique os dados informados.'
+                }
+            } else {
+                apiError.value = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
+            }
+        } finally {
+            loading.value = false
         }
-
-        const tokenDto = await registerUser(payload)
-
-        if (tokenDto?.token) {
-        localStorage.setItem('token', tokenDto.token)
-        }
-
-        router.push('/app/dashboard')
-    } catch (err) {
-        if (err.response) {
-        const status = err.response.status
-        const data = err.response.data
-
-        if (status === 403 || (data.message && data.message.toLowerCase().includes('e-mail'))) {
-            apiError.value = 'Este e-mail já está cadastrado. Tente fazer login ou use outro e-mail.'
-            errors.value.email = 'E-mail já em uso.'
-        } else if (data.message) {
-            apiError.value = data.message
-        } else {
-            apiError.value = 'Erro ao realizar o cadastro. Verifique os dados informados.'
-        }
-        } else {
-        apiError.value = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.'
-        }
-    } finally {
-        loading.value = false
-    }
     }
 </script>
 
