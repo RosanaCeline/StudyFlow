@@ -86,7 +86,7 @@
     .sidebar {
         min-width: 230px;
         width: 230px;
-        height: 100vh;
+        min-height: 100vh;
     }
 
     .btn-nav:active {
