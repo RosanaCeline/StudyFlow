@@ -55,7 +55,7 @@ Projetado como **Single Page Application (SPA)**, o sistema utiliza **Vue 3** no
 
 ### 1. Clonar o Repositório
 ```bash
-git clone [https://github.com/seu-usuario/studyflow.git](https://github.com/seu-usuario/studyflow.git)
+git clone https://github.com/RosanaCeline/StudyFlow.git
 cd studyflow
 ```
 
