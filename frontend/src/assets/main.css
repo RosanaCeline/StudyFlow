@@ -20,14 +20,18 @@ body {
 }
 
 a,
-a:visited {
-  color: var(--color-text-light);
+a:visited,
+.router-link-active,
+.router-link-exact-active {
+  color: var(--color-text-light) !important;
+  text-decoration: none;
 }
 
 a:hover,
 a:focus,
 a:active {
-  color: var(--color-text-light);
+  color: var(--color-text-light) !important;
+  opacity: 0.85;
 }
 
 .btn-primary {
